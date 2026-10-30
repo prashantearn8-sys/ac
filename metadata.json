@@ -1,0 +1,6 @@
+{
+  "name": "Cool Bros AC Service",
+  "description": "Precision AC servicing, hydro-jet maintenance, instant pricing calculator, online booking system, and customer maintenance tracker.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

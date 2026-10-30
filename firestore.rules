@@ -1,0 +1,298 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidAcType(val) {
+      return val is string && val.size() <= 40 && (
+        val == 'Split AC' ||
+        val == 'Window AC' ||
+        val == 'Cassette AC' ||
+        val == 'Ductable / VRF'
+      );
+    }
+
+    function isValidServiceType(val) {
+      return val is string && val.size() <= 60 && (
+        val == 'Foam Power Jet Service' ||
+        val == 'Anti-Rust Deep Chemical Wash' ||
+        val == 'Gas Charging & Leak Fix' ||
+        val == 'Diagnostic & PCB Repair' ||
+        val == 'Installation / Uninstallation' ||
+        val == 'Annual Maintenance Contract (AMC)'
+      );
+    }
+
+    function isValidTonnage(val) {
+      return val is string && val.size() <= 20 && (
+        val == '1.0 Ton' ||
+        val == '1.5 Ton' ||
+        val == '2.0 Ton' ||
+        val == '3.0+ Ton'
+      );
+    }
+
+    function isValidTimeSlot(val) {
+      return val is string && val.size() <= 30 && (
+        val == '09:00 AM - 11:00 AM' ||
+        val == '11:30 AM - 01:30 PM' ||
+        val == '02:30 PM - 04:30 PM' ||
+        val == '05:00 PM - 07:00 PM'
+      );
+    }
+
+    function isValidBookingStatus(val) {
+      return val is string && val.size() <= 20 && (
+        val == 'scheduled' ||
+        val == 'in-progress' ||
+        val == 'completed' ||
+        val == 'cancelled'
+      );
+    }
+
+    function isValidDateString(val) {
+      return val is string && val.size() == 10 && val.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function isValidMessageSubject(val) {
+      return val is string && val.size() <= 60 && (
+        val == 'General AC Inquiry' ||
+        val == 'Emergency Breakdown Support' ||
+        val == 'Commercial / AMC Quote' ||
+        val == 'Service Feedback' ||
+        val == 'Callback Request'
+      );
+    }
+
+    // 3. Entity Validation Blueprints (Anti-Update-Gap)
+    function isValidBooking(data) {
+      return data.keys().hasAll([
+        'userId',
+        'customerName',
+        'customerPhone',
+        'customerEmail',
+        'serviceAddress',
+        'acType',
+        'serviceType',
+        'unitCount',
+        'tonnage',
+        'scheduledDate',
+        'timeSlot',
+        'estimatedTotal',
+        'status',
+        'notes',
+        'technicianName',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId',
+        'customerName',
+        'customerPhone',
+        'customerEmail',
+        'serviceAddress',
+        'acType',
+        'serviceType',
+        'unitCount',
+        'tonnage',
+        'scheduledDate',
+        'timeSlot',
+        'estimatedTotal',
+        'status',
+        'notes',
+        'technicianName',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+      data.userId == request.auth.uid &&
+      data.customerName is string && data.customerName.size() >= 2 && data.customerName.size() <= 100 &&
+      data.customerPhone is string && data.customerPhone.size() >= 10 && data.customerPhone.size() <= 20 && data.customerPhone.matches('^[0-9+\\-\\s()]{10,20}$') &&
+      data.customerEmail is string && data.customerEmail.size() >= 5 && data.customerEmail.size() <= 120 &&
+      data.serviceAddress is string && data.serviceAddress.size() >= 5 && data.serviceAddress.size() <= 300 &&
+      isValidAcType(data.acType) &&
+      isValidServiceType(data.serviceType) &&
+      data.unitCount is number && data.unitCount >= 1 && data.unitCount <= 20 &&
+      isValidTonnage(data.tonnage) &&
+      isValidDateString(data.scheduledDate) &&
+      isValidTimeSlot(data.timeSlot) &&
+      data.estimatedTotal is number && data.estimatedTotal >= 199 && data.estimatedTotal <= 500000 &&
+      isValidBookingStatus(data.status) &&
+      data.notes is string && data.notes.size() <= 500 &&
+      data.technicianName is string && data.technicianName.size() >= 2 && data.technicianName.size() <= 100 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidReminder(data) {
+      return data.keys().hasAll([
+        'userId',
+        'unitLabel',
+        'acType',
+        'brandModel',
+        'lastServicedDate',
+        'nextDueDate',
+        'intervalMonths',
+        'healthStatus',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId',
+        'unitLabel',
+        'acType',
+        'brandModel',
+        'lastServicedDate',
+        'nextDueDate',
+        'intervalMonths',
+        'healthStatus',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+      data.userId == request.auth.uid &&
+      data.unitLabel is string && data.unitLabel.size() >= 2 && data.unitLabel.size() <= 80 &&
+      isValidAcType(data.acType) &&
+      data.brandModel is string && data.brandModel.size() >= 2 && data.brandModel.size() <= 80 &&
+      isValidDateString(data.lastServicedDate) &&
+      isValidDateString(data.nextDueDate) &&
+      data.intervalMonths is number && data.intervalMonths >= 1 && data.intervalMonths <= 24 &&
+      data.healthStatus is string && data.healthStatus.size() <= 20 && (
+        data.healthStatus == 'optimal' ||
+        data.healthStatus == 'due-soon' ||
+        data.healthStatus == 'overdue'
+      ) &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidCustomerMessage(data) {
+      return data.keys().hasAll([
+        'userId',
+        'senderName',
+        'senderPhone',
+        'senderEmail',
+        'subject',
+        'messageText',
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId',
+        'senderName',
+        'senderPhone',
+        'senderEmail',
+        'subject',
+        'messageText',
+        'createdAt'
+      ]) &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+      data.userId == request.auth.uid &&
+      data.senderName is string && data.senderName.size() >= 2 && data.senderName.size() <= 100 &&
+      data.senderPhone is string && data.senderPhone.size() >= 10 && data.senderPhone.size() <= 20 && data.senderPhone.matches('^[0-9+\\-\\s()]{10,20}$') &&
+      data.senderEmail is string && data.senderEmail.size() >= 5 && data.senderEmail.size() <= 120 &&
+      isValidMessageSubject(data.subject) &&
+      data.messageText is string && data.messageText.size() >= 5 && data.messageText.size() <= 1000 &&
+      data.createdAt is timestamp;
+    }
+
+    // 4. Collection Rules: /bookings/{bookingId}
+    match /bookings/{bookingId} {
+      allow get: if isSignedIn() && isValidId(bookingId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && existing().userId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(bookingId) &&
+        isValidBooking(incoming()) &&
+        incoming().status == 'scheduled' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser() &&
+        isValidId(bookingId) &&
+        isValidBooking(incoming()) &&
+        existing().userId == request.auth.uid &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        existing().status != 'completed' &&
+        existing().status != 'cancelled' && (
+          // Action 1: Reschedule or update notes
+          incoming().diff(existing()).affectedKeys().hasOnly(['scheduledDate', 'timeSlot', 'notes', 'updatedAt']) ||
+          // Action 2: Update status (e.g., mark completed or cancelled)
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        );
+
+      allow delete: if isVerifiedUser() &&
+        isValidId(bookingId) &&
+        existing().userId == request.auth.uid;
+    }
+
+    // 5. Collection Rules: /reminders/{reminderId}
+    match /reminders/{reminderId} {
+      allow get: if isSignedIn() && isValidId(reminderId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && existing().userId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(reminderId) &&
+        isValidReminder(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser() &&
+        isValidId(reminderId) &&
+        isValidReminder(incoming()) &&
+        existing().userId == request.auth.uid &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          // Action 1: Log new service completion and update due date / health status
+          incoming().diff(existing()).affectedKeys().hasOnly(['lastServicedDate', 'nextDueDate', 'intervalMonths', 'healthStatus', 'updatedAt']) ||
+          // Action 2: Edit unit details
+          incoming().diff(existing()).affectedKeys().hasOnly(['unitLabel', 'acType', 'brandModel', 'intervalMonths', 'nextDueDate', 'healthStatus', 'updatedAt'])
+        );
+
+      allow delete: if isVerifiedUser() &&
+        isValidId(reminderId) &&
+        existing().userId == request.auth.uid;
+    }
+
+    // 6. Collection Rules: /messages/{messageId}
+    match /messages/{messageId} {
+      allow get: if isSignedIn() && isValidId(messageId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && existing().userId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(messageId) &&
+        isValidCustomerMessage(incoming()) &&
+        incoming().createdAt == request.time;
+
+      allow delete: if isVerifiedUser() &&
+        isValidId(messageId) &&
+        existing().userId == request.auth.uid;
+    }
+  }
+}

@@ -1,0 +1,300 @@
+{
+  "entities": {
+    "Booking": {
+      "title": "Booking",
+      "description": "Represents an AC servicing, repair, gas charging, or installation appointment booked by an authenticated customer.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the customer who owns this booking.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Full name of the customer.",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "customerPhone": {
+          "type": "string",
+          "description": "Contact phone number for service dispatch.",
+          "minLength": 10,
+          "maxLength": 20,
+          "pattern": "^[0-9+\\-\\s()]{10,20}$"
+        },
+        "customerEmail": {
+          "type": "string",
+          "description": "Verified email address of the customer.",
+          "minLength": 5,
+          "maxLength": 120
+        },
+        "serviceAddress": {
+          "type": "string",
+          "description": "Complete street address and landmark for technician visit.",
+          "minLength": 5,
+          "maxLength": 300
+        },
+        "acType": {
+          "type": "string",
+          "description": "Category of air conditioning equipment.",
+          "enum": ["Split AC", "Window AC", "Cassette AC", "Ductable / VRF"],
+          "maxLength": 40
+        },
+        "serviceType": {
+          "type": "string",
+          "description": "Specific service package selected.",
+          "enum": [
+            "Foam Power Jet Service",
+            "Anti-Rust Deep Chemical Wash",
+            "Gas Charging & Leak Fix",
+            "Diagnostic & PCB Repair",
+            "Installation / Uninstallation",
+            "Annual Maintenance Contract (AMC)"
+          ],
+          "maxLength": 60
+        },
+        "unitCount": {
+          "type": "number",
+          "description": "Number of AC units included in the booking (1 to 20)."
+        },
+        "tonnage": {
+          "type": "string",
+          "description": "Cooling capacity rating per unit.",
+          "enum": ["1.0 Ton", "1.5 Ton", "2.0 Ton", "3.0+ Ton"],
+          "maxLength": 20
+        },
+        "scheduledDate": {
+          "type": "string",
+          "description": "Scheduled service date in YYYY-MM-DD format.",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "timeSlot": {
+          "type": "string",
+          "description": "Preferred arrival window.",
+          "enum": [
+            "09:00 AM - 11:00 AM",
+            "11:30 AM - 01:30 PM",
+            "02:30 PM - 04:30 PM",
+            "05:00 PM - 07:00 PM"
+          ],
+          "maxLength": 30
+        },
+        "estimatedTotal": {
+          "type": "number",
+          "description": "Calculated service total in INR."
+        },
+        "status": {
+          "type": "string",
+          "description": "Lifecycle status of the booking.",
+          "enum": ["scheduled", "in-progress", "completed", "cancelled"],
+          "maxLength": 20
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional special instructions or cooling symptoms.",
+          "maxLength": 500
+        },
+        "technicianName": {
+          "type": "string",
+          "description": "Assigned Cool Bros lead technician name.",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when booking was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when booking was last updated."
+        }
+      },
+      "required": [
+        "userId",
+        "customerName",
+        "customerPhone",
+        "customerEmail",
+        "serviceAddress",
+        "acType",
+        "serviceType",
+        "unitCount",
+        "tonnage",
+        "scheduledDate",
+        "timeSlot",
+        "estimatedTotal",
+        "status",
+        "notes",
+        "technicianName",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MaintenanceReminder": {
+      "title": "MaintenanceReminder",
+      "description": "Tracks an installed AC unit and its upcoming preventive maintenance reminder schedule for a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "unitLabel": {
+          "type": "string",
+          "description": "Room or location label for the AC unit (e.g. Master Bedroom Split AC).",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "acType": {
+          "type": "string",
+          "description": "Type of AC unit.",
+          "enum": ["Split AC", "Window AC", "Cassette AC", "Ductable / VRF"],
+          "maxLength": 40
+        },
+        "brandModel": {
+          "type": "string",
+          "description": "Equipment brand and model details.",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "lastServicedDate": {
+          "type": "string",
+          "description": "Date of most recent service in YYYY-MM-DD format.",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "nextDueDate": {
+          "type": "string",
+          "description": "Date of next recommended preventive service in YYYY-MM-DD format.",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "intervalMonths": {
+          "type": "number",
+          "description": "Recommended maintenance cadence in months (3, 4, 6, or 12)."
+        },
+        "healthStatus": {
+          "type": "string",
+          "description": "Current preventive maintenance state.",
+          "enum": ["optimal", "due-soon", "overdue"],
+          "maxLength": 20
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when unit tracker was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when unit tracker was last updated."
+        }
+      },
+      "required": [
+        "userId",
+        "unitLabel",
+        "acType",
+        "brandModel",
+        "lastServicedDate",
+        "nextDueDate",
+        "intervalMonths",
+        "healthStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CustomerMessage": {
+      "title": "CustomerMessage",
+      "description": "Represents a direct inquiry message sent from the app and forwarded via email to coolbrosacservice@gmail.com.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the customer who sent the message.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "senderName": {
+          "type": "string",
+          "description": "Full name of the customer sending the message.",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "senderPhone": {
+          "type": "string",
+          "description": "Contact phone number of the sender.",
+          "minLength": 10,
+          "maxLength": 20,
+          "pattern": "^[0-9+\\-\\s()]{10,20}$"
+        },
+        "senderEmail": {
+          "type": "string",
+          "description": "Verified email address of the sender.",
+          "minLength": 5,
+          "maxLength": 120
+        },
+        "subject": {
+          "type": "string",
+          "description": "Category/subject of the inquiry.",
+          "enum": [
+            "General AC Inquiry",
+            "Emergency Breakdown Support",
+            "Commercial / AMC Quote",
+            "Service Feedback",
+            "Callback Request"
+          ],
+          "maxLength": 60
+        },
+        "messageText": {
+          "type": "string",
+          "description": "Body of the message sent to Cool Bros AC Service.",
+          "minLength": 5,
+          "maxLength": 1000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when message was sent."
+        }
+      },
+      "required": [
+        "userId",
+        "senderName",
+        "senderPhone",
+        "senderEmail",
+        "subject",
+        "messageText",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/bookings/{bookingId}": {
+      "schema": {
+        "$ref": "#/entities/Booking"
+      },
+      "description": "Stores customer AC service bookings, isolated strictly to the authenticated owner."
+    },
+    "/reminders/{reminderId}": {
+      "schema": {
+        "$ref": "#/entities/MaintenanceReminder"
+      },
+      "description": "Stores customer AC equipment profiles and upcoming maintenance reminder schedules, isolated strictly to the authenticated owner."
+    },
+    "/messages/{messageId}": {
+      "schema": {
+        "$ref": "#/entities/CustomerMessage"
+      },
+      "description": "Stores customer inquiry messages sent from the app and emailed to coolbrosacservice@gmail.com."
+    }
+  }
+}
