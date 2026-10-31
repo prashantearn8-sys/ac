@@ -59,6 +59,7 @@ import {
   HeroCoolingIllustration,
   ServiceCardIllustration,
 } from './components/AcGraphics';
+import { BRAND_LIST, BrandLogoSvg } from './components/BrandLogos';
 import type { DisplayServiceItem } from './components/AdminPage';
 import { LEGAL_PAGE_TABS, LegalPageSlug } from './components/LegalPages';
 
@@ -1011,25 +1012,35 @@ export default function App() {
                       </motion.div>
                     </div>
 
-                    {/* PLAIN-TEXT MULTI-BRAND COMPATIBILITY STRIP (No Trademark Logos, Clear Non-Affiliation Notice) */}
-                    <div className="mt-6 sm:mt-14 pt-4 sm:pt-8 border-t border-[#191A23]/15 space-y-2 sm:space-y-3 phone-landscape-brands-strip">
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <span className="text-[11px] sm:text-xs font-mono font-bold text-[#191A23] uppercase tracking-wider mr-1">
+                    {/* MULTI-BRAND LOGOS SHOWCASE STRIP (B&W by default, colourful on hover) */}
+                    <div className="mt-6 sm:mt-12 pt-4 sm:pt-6 border-t border-[#191A23]/15 space-y-3 phone-landscape-brands-strip">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                        <span className="text-[11px] sm:text-xs font-mono font-bold text-[#191A23] uppercase tracking-wider">
                           We service all major AC brands:
                         </span>
-                        {COMPATIBLE_AC_BRANDS.map((brand) => (
-                          <span
-                            key={brand}
-                            className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-lg bg-[#F8FAFC] border border-[#191A23]/25 text-[11px] sm:text-xs font-mono font-semibold text-[#191A23]"
+                        <span className="text-[10px] sm:text-[11px] font-mono text-[#191A23]/60">
+                          Hover logo to view brand colors
+                        </span>
+                      </div>
+
+                      {/* Brand Logo Grid: Clean borderless logos, B&W by default, Colourful on cursor hover */}
+                      <div className="grid grid-cols-4 md:grid-cols-8 gap-x-4 gap-y-3 sm:gap-x-6 sm:gap-y-4 items-center">
+                        {BRAND_LIST.map((brand) => (
+                          <div
+                            key={brand.id}
+                            className="group flex items-center justify-center py-1 transition-all duration-300 cursor-pointer"
+                            title={`We service and repair ${brand.name} Air Conditioners`}
+                            aria-label={`${brand.name} AC Service & Repair`}
                           >
-                            {brand}
-                          </span>
+                            <div className="filter grayscale contrast-125 opacity-55 group-hover:grayscale-0 group-hover:contrast-100 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 ease-out flex items-center justify-center">
+                              <BrandLogoSvg brandId={brand.id} className="h-5 sm:h-6 w-auto max-w-[105px] select-none" />
+                            </div>
+                          </div>
                         ))}
                       </div>
-                      <p className="text-[11px] sm:text-xs text-[#191A23]/75">
-                        Independent multi-brand AC repair &amp; maintenance provider. We are not
-                        affiliated with or authorized by any AC manufacturer; brand names are listed
-                        solely to indicate equipment compatibility.
+
+                      <p className="text-[10px] sm:text-xs text-[#191A23]/75">
+                        Independent multi-brand AC repair &amp; maintenance provider. We service all major brands; brand names and trademarks belong to their respective owners and are displayed strictly to indicate compatibility.
                       </p>
                     </div>
                   </div>
