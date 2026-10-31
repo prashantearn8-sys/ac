@@ -7,11 +7,16 @@
     --font-mono: 'JetBrains Mono', monospace;
   }
 
-  html {
+  html,
+  body {
     font-family: var(--font-sans);
     scroll-behavior: smooth;
     color: #191A23;
     background-color: #FFFFFF;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
   }
 
   h1, h2, h3, h4, .font-display {

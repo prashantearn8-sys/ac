@@ -2,15 +2,14 @@ import React from 'react';
 import { motion } from 'motion/react';
 
 /**
- * Brand Logo: Cool Bros AC — Glossy PNG App Icon & Emblem (/logo.png)
- * Matches the app theme (#7DD3FC light blue, #191A23 obsidian, #FFFFFF white) and HVAC category.
+ * Brand Logo: Cool Bros AC Service — Transparent Blue Macro Snowflake PNG (/logo.png)
  */
 export const CoolBrosLogo: React.FC<{ className?: string }> = ({
   className = 'w-9 h-9',
 }) => (
   <img
-    src="/logo.png"
-    alt="Cool Bros AC Logo"
+    src="/logo.png?v=simple-blue"
+    alt="Cool Bros AC Service Logo"
     referrerPolicy="no-referrer"
     className={`${className} object-contain select-none shrink-0`}
   />
@@ -23,12 +22,12 @@ export const CoolBrosLogo: React.FC<{ className?: string }> = ({
  */
 export const HeroCoolingIllustration: React.FC = () => {
   return (
-    <div className="relative w-full max-w-[680px] mx-auto aspect-[1.08/1] select-none">
+    <div className="relative w-full max-w-[460px] sm:max-w-[560px] lg:max-w-[640px] xl:max-w-[680px] mx-auto aspect-[1.08/1] select-none">
       <svg
         viewBox="0 0 540 500"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full overflow-visible"
+        className="w-full h-full overflow-hidden sm:overflow-visible"
       >
         {/* Background Tilted Airflow Orbital Rings */}
         <g transform="rotate(-14 270 265)">
@@ -1028,3 +1027,256 @@ export const DispatchDeskIllustration: React.FC = () => (
     </g>
   </svg>
 );
+
+export type AcBrandName =
+  | 'DAIKIN'
+  | 'MITSUBISHI'
+  | 'VOLTAS'
+  | 'BLUE STAR'
+  | 'CARRIER'
+  | 'HITACHI';
+
+/**
+ * Authentic AC Brand Logos (Full color when hovered, dull B&W grayscale by default via parent CSS)
+ */
+export const AcBrandLogo: React.FC<{ brand: AcBrandName }> = ({ brand }) => {
+  switch (brand) {
+    case 'DAIKIN':
+      return (
+        <svg
+          viewBox="0 0 180 48"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-9 sm:h-11 w-auto select-none"
+          aria-label="Daikin Air Conditioning"
+        >
+          {/* Iconic Daikin Two-Tone Blue Corner Triangle */}
+          <polygon points="6,8 34,8 6,36" fill="#004B87" />
+          <polygon points="15,8 34,8 6,36 6,17" fill="#00A0E9" />
+          {/* Bold Italic DAIKIN Wordmark */}
+          <text
+            x="38"
+            y="34"
+            fill="#0097E0"
+            fontFamily="var(--font-display), sans-serif"
+            fontSize="27"
+            fontWeight="800"
+            fontStyle="italic"
+            letterSpacing="1.5"
+          >
+            DAIKIN
+          </text>
+        </svg>
+      );
+
+    case 'MITSUBISHI':
+      return (
+        <svg
+          viewBox="0 0 210 48"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-9 sm:h-11 w-auto select-none"
+          aria-label="Mitsubishi Electric"
+        >
+          {/* Iconic Mitsubishi Three-Diamond Red Emblem (#E60012) */}
+          <g fill="#E60012">
+            {/* Top Diamond */}
+            <polygon points="24,5 31,17 24,29 17,17" />
+            {/* Bottom-Left Diamond */}
+            <polygon points="24,29 17,41 3,41 10,29" />
+            {/* Bottom-Right Diamond */}
+            <polygon points="24,29 38,29 45,41 31,41" />
+          </g>
+          {/* MITSUBISHI ELECTRIC Stacked Wordmark */}
+          <text
+            x="53"
+            y="25"
+            fill="#191A23"
+            fontFamily="var(--font-display), sans-serif"
+            fontSize="19"
+            fontWeight="800"
+            letterSpacing="0.8"
+          >
+            MITSUBISHI
+          </text>
+          <text
+            x="54"
+            y="39"
+            fill="#E60012"
+            fontFamily="var(--font-display), sans-serif"
+            fontSize="11"
+            fontWeight="700"
+            letterSpacing="2.4"
+          >
+            ELECTRIC
+          </text>
+        </svg>
+      );
+
+    case 'VOLTAS':
+      return (
+        <svg
+          viewBox="0 0 185 48"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-9 sm:h-11 w-auto select-none"
+          aria-label="Voltas Air Conditioners"
+        >
+          {/* Voltas Cooling Emblem Badge */}
+          <rect x="4" y="9" width="30" height="30" rx="7" fill="#005BAC" />
+          <path
+            d="M11 16L19 32L27 16"
+            stroke="#FFFFFF"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M14 14C17 11 21 11 24 14"
+            stroke="#00AEEF"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+          {/* VOLTAS Wordmark + TATA Subtitle */}
+          <text
+            x="42"
+            y="29"
+            fill="#005BAC"
+            fontFamily="var(--font-display), sans-serif"
+            fontSize="24"
+            fontWeight="800"
+            letterSpacing="1.8"
+          >
+            VOLTAS
+          </text>
+          <text
+            x="43"
+            y="40"
+            fill="#008FD5"
+            fontFamily="var(--font-sans), sans-serif"
+            fontSize="8.5"
+            fontWeight="700"
+            letterSpacing="1.4"
+          >
+            A TATA PRODUCT
+          </text>
+        </svg>
+      );
+
+    case 'BLUE STAR':
+      return (
+        <svg
+          viewBox="0 0 205 48"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-9 sm:h-11 w-auto select-none"
+          aria-label="Blue Star Air Conditioners"
+        >
+          {/* Blue Star 4-Pointed Star & Swoosh Emblem */}
+          <circle cx="22" cy="24" r="15" fill="#E0F2FE" />
+          <path
+            d="M22 6L26.2 19.8L40 24L26.2 28.2L22 42L17.8 28.2L4 24L17.8 19.8L22 6Z"
+            fill="#0054A6"
+          />
+          <path
+            d="M22 11L24.5 21.5L35 24L24.5 26.5L22 37L19.5 26.5L9 24L19.5 21.5L22 11Z"
+            fill="#00AEEF"
+          />
+          {/* BLUE STAR Wordmark */}
+          <text
+            x="46"
+            y="32"
+            fill="#0054A6"
+            fontFamily="var(--font-display), sans-serif"
+            fontSize="22"
+            fontWeight="800"
+            letterSpacing="1.2"
+          >
+            BLUE STAR
+          </text>
+        </svg>
+      );
+
+    case 'CARRIER':
+      return (
+        <svg
+          viewBox="0 0 175 48"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-9 sm:h-11 w-auto select-none"
+          aria-label="Carrier Air Conditioning"
+        >
+          {/* Iconic Carrier Royal-Blue Oval Badge */}
+          <ellipse cx="86" cy="24" rx="76" ry="18" fill="#002F87" />
+          <ellipse
+            cx="86"
+            cy="24"
+            rx="71"
+            ry="14.5"
+            stroke="#38BDF8"
+            strokeWidth="1.6"
+          />
+          {/* White Italic Carrier Script Wordmark */}
+          <text
+            x="86"
+            y="31"
+            textAnchor="middle"
+            fill="#FFFFFF"
+            fontFamily="var(--font-display), sans-serif"
+            fontSize="22"
+            fontWeight="800"
+            fontStyle="italic"
+            letterSpacing="1"
+          >
+            Carrier
+          </text>
+        </svg>
+      );
+
+    case 'HITACHI':
+      return (
+        <svg
+          viewBox="0 0 185 48"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-9 sm:h-11 w-auto select-none"
+          aria-label="Hitachi Cooling & Heating"
+        >
+          {/* Hitachi Target Crest + Red Inspire Slash */}
+          <circle cx="19" cy="24" r="12" stroke="#E60027" strokeWidth="2.6" />
+          <circle cx="19" cy="24" r="4" fill="#E60027" />
+          <path
+            d="M19 8V40M7 24H31M10.5 15.5L27.5 32.5M27.5 15.5L10.5 32.5"
+            stroke="#E60027"
+            strokeWidth="1.8"
+          />
+          {/* HITACHI Corporate Wordmark */}
+          <text
+            x="39"
+            y="29"
+            fill="#191A23"
+            fontFamily="var(--font-display), sans-serif"
+            fontSize="22"
+            fontWeight="800"
+            letterSpacing="2.5"
+          >
+            HITACHI
+          </text>
+          {/* Red "Inspire the Next" Accent Bar */}
+          <rect x="40" y="34" width="44" height="3" rx="1.5" fill="#E60027" />
+          <text
+            x="90"
+            y="38"
+            fill="#E60027"
+            fontFamily="var(--font-sans), sans-serif"
+            fontSize="8.5"
+            fontWeight="700"
+            fontStyle="italic"
+          >
+            Cooling &amp; Tech
+          </text>
+        </svg>
+      );
+  }
+};
+

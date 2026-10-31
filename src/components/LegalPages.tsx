@@ -306,20 +306,20 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
   };
 
   return (
-    <section className="py-10 lg:py-16">
-      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 space-y-10">
+    <section className="py-8 sm:py-12 lg:py-16">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 space-y-8 sm:space-y-10">
         {/* Top Bar: Back to Home + 4 Policy Page Switcher Tabs */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#191A23]/15">
           <button
             type="button"
             onClick={onBackHome}
-            className="self-start inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl active:translate-y-0.5 transition-all cursor-pointer"
+            className="self-start inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs sm:text-sm font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl active:translate-y-0.5 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Home</span>
           </button>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5">
             {LEGAL_PAGE_TABS.map((tab) => {
               const isActive = tab.slug === activeSlug;
               return (
@@ -327,14 +327,14 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
                   key={tab.slug}
                   type="button"
                   onClick={() => onSelectSlug(tab.slug)}
-                  className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl border border-[#191A23] transition-all cursor-pointer ${
+                  className={`inline-flex items-center justify-center sm:justify-start gap-2 px-3.5 sm:px-4 py-2.5 min-h-[44px] text-xs sm:text-sm font-bold rounded-xl border border-[#191A23] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] ${
                     isActive
                       ? 'bg-[#7DD3FC] text-[#191A23]'
                       : 'bg-[#F3F3F3] text-[#191A23]/80 hover:bg-white hover:text-[#191A23]'
                   }`}
                 >
                   {renderPageIcon(tab.slug)}
-                  <span>{tab.label}</span>
+                  <span className="truncate">{tab.label}</span>
                 </button>
               );
             })}
@@ -347,9 +347,9 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="bg-[#191A23] text-white border border-[#191A23] rounded-[38px] p-7 sm:p-12 space-y-8"
+          className="bg-[#191A23] text-white border border-[#191A23] rounded-[28px] sm:rounded-[38px] p-6 sm:p-10 lg:p-12 space-y-6 sm:space-y-8"
         >
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
             <span className="inline-flex items-center gap-2 bg-[#7DD3FC] text-[#191A23] px-3 py-1 rounded-lg border border-[#191A23] text-xs font-mono font-bold">
               {renderPageIcon(page.slug)}
               <span>{page.badge}</span>
@@ -359,8 +359,8 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
             </span>
           </div>
 
-          <div className="space-y-4 max-w-3xl">
-            <h1 className="text-3xl sm:text-5xl font-display font-bold tracking-tight text-white">
+          <div className="space-y-3 sm:space-y-4 max-w-3xl">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-white">
               {page.title}
             </h1>
             <p className="text-sm sm:text-base text-white/85 leading-relaxed">
@@ -369,7 +369,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
           </div>
 
           {/* 3 Key Highlights Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 pt-2">
             {page.highlights.map((hl) => (
               <div
                 key={hl.label}
@@ -387,7 +387,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
         </motion.div>
 
         {/* Detailed Policy Sections */}
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           {page.sections.map((sec, idx) => {
             const isBlueCard = idx % 2 === 1;
             return (
@@ -396,16 +396,16 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: idx * 0.05 }}
-                className={`border border-[#191A23] rounded-[34px] p-6 sm:p-10 space-y-5 ${
+                className={`border border-[#191A23] rounded-[26px] sm:rounded-[34px] p-5 sm:p-8 lg:p-10 space-y-4 sm:space-y-5 ${
                   isBlueCard ? 'bg-[#7DD3FC]/25' : 'bg-[#F3F3F3]'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#191A23]/15">
-                  <div className="flex items-center gap-4">
-                    <span className="w-12 h-12 rounded-2xl bg-[#191A23] text-[#7DD3FC] font-display font-bold text-xl flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-3.5 sm:gap-4">
+                    <span className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#191A23] text-[#7DD3FC] font-display font-bold text-lg sm:text-xl flex items-center justify-center shrink-0">
                       {sec.number}
                     </span>
-                    <h2 className="text-xl sm:text-2xl font-display font-bold text-[#191A23]">
+                    <h2 className="text-lg sm:text-2xl font-display font-bold text-[#191A23]">
                       {sec.title}
                     </h2>
                   </div>
@@ -441,7 +441,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
         </div>
 
         {/* Bottom Support & Escalation Desk Card */}
-        <div className="bg-white border border-[#191A23] rounded-[34px] p-7 sm:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="bg-white border border-[#191A23] rounded-[26px] sm:rounded-[34px] p-6 sm:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="inline-block bg-[#7DD3FC] border border-[#191A23] px-2.5 py-0.5 rounded text-xs font-mono font-bold text-[#191A23]">
               QUESTIONS ABOUT OUR {page.title.toUpperCase()}?
@@ -455,12 +455,12 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="w-full lg:w-auto grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-3 shrink-0">
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl hover:bg-[#38BDF8] transition-all whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 min-h-[46px] text-xs sm:text-sm font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-2xl hover:bg-[#4ADE80] transition-all whitespace-nowrap"
             >
               <MessageCircle className="w-4 h-4" />
               <span>WhatsApp +91 9560415262</span>
@@ -468,7 +468,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
 
             <a
               href="tel:+919560415262"
-              className="inline-flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-semibold text-white bg-[#191A23] rounded-2xl hover:bg-[#191A23]/90 transition-colors whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 min-h-[46px] text-xs sm:text-sm font-semibold text-white bg-[#191A23] rounded-2xl hover:bg-[#191A23]/90 transition-colors whitespace-nowrap"
             >
               <Phone className="w-4 h-4" />
               <span>Call +91 9560415262</span>
@@ -476,7 +476,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
 
             <a
               href="mailto:coolbrosacservice@gmail.com"
-              className="inline-flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-semibold text-[#191A23] bg-[#F3F3F3] border border-[#191A23] rounded-2xl hover:bg-[#7DD3FC] transition-colors whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 min-h-[46px] text-xs sm:text-sm font-semibold text-[#191A23] bg-[#F3F3F3] border border-[#191A23] rounded-2xl hover:bg-[#7DD3FC] transition-colors whitespace-nowrap"
             >
               <Mail className="w-4 h-4" />
               <span>coolbrosacservice@gmail.com</span>
