@@ -4,6 +4,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut as firebaseSignOut,
+  type UserCredential,
 } from 'firebase/auth';
 import {
   getFirestore,
@@ -21,6 +22,89 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+
+// Guard @firebase/auth PopupOperation against double-reject race conditions
+// ("INTERNAL ASSERTION FAILED: Pending promise was never set") when popup poll fires after rejection
+function patchFirebaseAuthPopupResolver(authInstance: unknown) {
+  type PopupConsumer = {
+    pendingPromise?: { resolve: (v: unknown) => void; reject: (e: unknown) => void } | null;
+    reject?: (err: unknown) => void;
+    resolve?: (cred: unknown) => void;
+    unregisterAndCleanUp?: () => void;
+    __patchedSafeReject?: boolean;
+  };
+
+  const internalAuth = authInstance as {
+    _popupRedirectResolver?: {
+      _initialize?: (a: unknown) => Promise<{
+        registerConsumer?: (consumer: PopupConsumer) => void;
+        __patchedRegister?: boolean;
+      }>;
+      _isIframeWebStorageSupported?: (a: unknown, cb: (supported: boolean) => void) => void;
+    };
+  };
+
+  const resolver = internalAuth?._popupRedirectResolver;
+  if (!resolver) return;
+
+  resolver._isIframeWebStorageSupported = (_a: unknown, cb: (supported: boolean) => void) => {
+    cb(true);
+  };
+
+  if (typeof resolver._initialize === 'function') {
+    const origInit = resolver._initialize.bind(resolver);
+    resolver._initialize = async (a: unknown) => {
+      const manager = await origInit(a);
+      if (manager && typeof manager.registerConsumer === 'function' && !manager.__patchedRegister) {
+        manager.__patchedRegister = true;
+        const origRegister = manager.registerConsumer.bind(manager);
+        manager.registerConsumer = (consumer: PopupConsumer) => {
+          if (consumer && !consumer.__patchedSafeReject) {
+            consumer.__patchedSafeReject = true;
+            consumer.reject = function (this: PopupConsumer, err: unknown) {
+              if (!this.pendingPromise) {
+                this.unregisterAndCleanUp?.();
+                return;
+              }
+              this.pendingPromise.reject(err);
+              this.unregisterAndCleanUp?.();
+            };
+            consumer.resolve = function (this: PopupConsumer, cred: unknown) {
+              if (!this.pendingPromise) {
+                this.unregisterAndCleanUp?.();
+                return;
+              }
+              this.pendingPromise.resolve(cred);
+              this.unregisterAndCleanUp?.();
+            };
+          }
+          return origRegister(consumer);
+        };
+      }
+      return manager;
+    };
+  }
+}
+patchFirebaseAuthPopupResolver(auth);
+
+// Initialize Firebase App Check when reCAPTCHA v3 site key is configured
+const recaptchaSiteKey =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RECAPTCHA_SITE_KEY) ||
+  firebaseConfig.recaptchaSiteKey ||
+  '';
+
+if (typeof window !== 'undefined' && recaptchaSiteKey.trim().length > 0) {
+  import('firebase/app-check')
+    .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(recaptchaSiteKey.trim()),
+        isTokenAutoRefreshEnabled: true,
+      });
+    })
+    .catch(() => {
+      // App Check already initialized or environment unsupported
+    });
+}
 
 // Validate Connection to Firestore on boot
 async function testConnection() {
@@ -53,7 +137,7 @@ export interface FirestoreErrorInfo {
     emailVerified?: boolean | null;
     isAnonymous?: boolean | null;
     tenantId?: string | null;
-    providerInfo?: {
+    providerInfo: {
       providerId?: string | null;
       email?: string | null;
     }[];
@@ -88,11 +172,11 @@ export function handleFirestoreError(
 
 export const VALIDATION_RULES = {
   ID_PATTERN: /^[a-zA-Z0-9_\-]+$/,
-  PHONE_PATTERN: /^[0-9+\-\s()]{10,20}$/,
   MAX_Lengths: {
     customerName: 100,
-    customerPhone: 20,
     customerEmail: 120,
+    locality: 200,
+    acDetails: 100,
     subject: 60,
     messageText: 1000,
   },
@@ -100,16 +184,21 @@ export const VALIDATION_RULES = {
     'General AC Inquiry',
     'Emergency Breakdown Support',
     'Commercial / AMC Quote',
+    'Installation / Uninstallation Quote',
     'Service Feedback',
-    'Callback Request',
   ] as const,
 };
 
 export const ADMIN_EMAIL = 'coolbrosacservice@gmail.com';
+export const AUTHORIZED_ADMIN_EMAILS = [
+  'coolbrosacservice@gmail.com',
+  'burnster1826@gmail.com',
+] as const;
 
 export function isAdminEmail(email?: string | null): boolean {
   if (!email) return false;
-  return email.trim().toLowerCase() === ADMIN_EMAIL;
+  const normalized = email.trim().toLowerCase();
+  return (AUTHORIZED_ADMIN_EMAILS as readonly string[]).includes(normalized);
 }
 
 export type ServiceType = string;
@@ -121,29 +210,73 @@ export function generateSafeDocId(prefix: string): string {
   return raw.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 120);
 }
 
-export async function signInWithGoogle() {
-  try {
-    return await signInWithPopup(auth, googleProvider);
-  } catch (err: unknown) {
-    const code = (err as { code?: string })?.code || '';
-    if (code === 'auth/unauthorized-domain') {
-      const host = typeof window !== 'undefined' ? window.location.hostname : 'your domain';
-      throw new Error(
-        `To enable Google Sign-In on ${host}, add "${host}" in Firebase Console → Authentication → Settings → Authorized domains.`
-      );
-    }
-    throw err;
+let activeSignInPromise: Promise<UserCredential | null> | null = null;
+
+export async function signInWithGoogle(): Promise<UserCredential | null> {
+  if (activeSignInPromise) {
+    return activeSignInPromise;
   }
+
+  activeSignInPromise = (async () => {
+    try {
+      await auth.authStateReady();
+      return await signInWithPopup(auth, googleProvider);
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code || '';
+      const message = err instanceof Error ? err.message : String(err);
+
+      // Ignore benign popup closure or duplicate-click cancellation
+      if (
+        code === 'auth/popup-closed-by-user' ||
+        code === 'auth/cancelled-popup-request' ||
+        message.includes('Pending promise was never set')
+      ) {
+        return null;
+      }
+
+      if (code === 'auth/unauthorized-domain') {
+        const host = typeof window !== 'undefined' ? window.location.hostname : 'your domain';
+        throw new Error(
+          `To enable Google Sign-In on ${host}, add "${host}" in Firebase Console → Authentication → Settings → Authorized domains.`
+        );
+      }
+      if (
+        code === 'auth/popup-blocked' ||
+        code === 'auth/operation-not-supported-in-this-environment'
+      ) {
+        throw new Error(
+          'Google Sign-In popup was blocked (common inside WhatsApp/Instagram browsers). Please open this site in Chrome or Safari, or book directly via WhatsApp (+91 9560415262).'
+        );
+      }
+      throw err;
+    } finally {
+      activeSignInPromise = null;
+    }
+  })();
+
+  return activeSignInPromise;
 }
 
 export async function signOutUser() {
   return firebaseSignOut(auth);
 }
 
+export interface CustomerMessageRecord {
+  id: string;
+  userId: string;
+  senderName: string;
+  senderEmail: string;
+  locality: string;
+  acDetails: string;
+  subject: MessageSubject;
+  messageText: string;
+  createdAt?: Timestamp | null;
+}
+
 export interface CreateCustomerMessageInput {
   senderName: string;
-  senderPhone?: string;
-  senderEmail?: string;
+  locality?: string;
+  acDetails?: string;
   subject: MessageSubject;
   messageText: string;
 }
@@ -152,7 +285,7 @@ export async function createCustomerMessageInFirestore(
   input: CreateCustomerMessageInput
 ): Promise<string | null> {
   const user = auth.currentUser;
-  if (!user) {
+  if (!user || !user.email || !user.emailVerified) {
     return null;
   }
 
@@ -160,14 +293,11 @@ export async function createCustomerMessageInFirestore(
   const path = `messages/${messageId}`;
 
   const cleanName = input.senderName.trim().slice(0, VALIDATION_RULES.MAX_Lengths.customerName);
-  const cleanPhone = (input.senderPhone?.trim() || '9560415262').slice(
-    0,
-    VALIDATION_RULES.MAX_Lengths.customerPhone
-  );
-  const cleanEmail = (input.senderEmail?.trim() || user.email || 'customer@coolbrosac.com').slice(
-    0,
-    VALIDATION_RULES.MAX_Lengths.customerEmail
-  );
+  const cleanEmail = user.email.trim().slice(0, VALIDATION_RULES.MAX_Lengths.customerEmail);
+  const cleanLocality = (input.locality || '').trim().slice(0, VALIDATION_RULES.MAX_Lengths.locality);
+  const cleanAcDetails = (input.acDetails || '')
+    .trim()
+    .slice(0, VALIDATION_RULES.MAX_Lengths.acDetails);
   const cleanText = input.messageText.trim().slice(0, VALIDATION_RULES.MAX_Lengths.messageText);
 
   if (cleanName.length < 2 || cleanText.length < 5) {
@@ -178,8 +308,9 @@ export async function createCustomerMessageInFirestore(
     await setDoc(doc(db, 'messages', messageId), {
       userId: user.uid,
       senderName: cleanName,
-      senderPhone: cleanPhone,
       senderEmail: cleanEmail,
+      locality: cleanLocality,
+      acDetails: cleanAcDetails,
       subject: input.subject,
       messageText: cleanText,
       createdAt: serverTimestamp(),
@@ -190,11 +321,21 @@ export async function createCustomerMessageInFirestore(
   }
 }
 
+export async function deleteMessageInFirestore(messageId: string): Promise<void> {
+  const path = `messages/${messageId}`;
+  try {
+    await deleteDoc(doc(db, 'messages', messageId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
 export interface CustomerReviewRecord {
   id: string;
   authorId: string;
   authorName: string;
   isVerifiedUser: boolean;
+  approved: boolean;
   rating: number;
   serviceUsed: ServiceType;
   locality: string;
@@ -210,7 +351,9 @@ export interface CreateReviewInput {
   reviewText: string;
 }
 
-export async function createReviewInFirestore(input: CreateReviewInput): Promise<string> {
+export async function createReviewInFirestore(
+  input: CreateReviewInput
+): Promise<{ id: string; approved: boolean }> {
   const user = auth.currentUser;
   const reviewId = generateSafeDocId('rev');
   const path = `reviews/${reviewId}`;
@@ -230,12 +373,15 @@ export async function createReviewInFirestore(input: CreateReviewInput): Promise
     throw new Error('Please write at least 5 characters in your review.');
   }
 
+  const autoApproved = Boolean(user && user.emailVerified && isAdminEmail(user.email));
+
   const payload = {
     authorId: user ? user.uid : 'guest',
     authorName: cleanName,
     isVerifiedUser: Boolean(user && user.emailVerified),
+    approved: autoApproved,
     rating: safeRating,
-    serviceUsed: input.serviceUsed,
+    serviceUsed: input.serviceUsed.slice(0, 80),
     locality: cleanLocality,
     reviewText: cleanText,
     createdAt: serverTimestamp(),
@@ -243,9 +389,23 @@ export async function createReviewInFirestore(input: CreateReviewInput): Promise
 
   try {
     await setDoc(doc(db, 'reviews', reviewId), payload);
-    return reviewId;
+    return { id: reviewId, approved: autoApproved };
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
+  }
+}
+
+export async function setReviewApprovalInFirestore(
+  reviewId: string,
+  approved: boolean
+): Promise<void> {
+  const path = `reviews/${reviewId}`;
+  try {
+    await updateDoc(doc(db, 'reviews', reviewId), {
+      approved,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
   }
 }
 
@@ -264,7 +424,6 @@ export interface ServiceItemRecord {
   tagline: string;
   priceInr: number;
   iconIndex: number;
-  updatedByEmail?: string;
   createdAt?: Timestamp | null;
   updatedAt?: Timestamp | null;
 }
@@ -280,8 +439,8 @@ export interface UpsertServiceInput {
 
 export async function saveServiceInFirestore(input: UpsertServiceInput): Promise<string> {
   const user = auth.currentUser;
-  if (!user || !user.email) {
-    throw new Error('Please sign in with coolbrosacservice@gmail.com to manage services.');
+  if (!user || !user.email || !isAdminEmail(user.email)) {
+    throw new Error('Please sign in with an authorized admin account to manage services.');
   }
 
   const serviceId =
@@ -294,7 +453,6 @@ export async function saveServiceInFirestore(input: UpsertServiceInput): Promise
   const cleanTagline = (input.tagline || '').trim().slice(0, 200);
   const safePrice = Math.max(49, Math.min(500000, Math.round(Number(input.priceInr) || 499)));
   const safeIconIndex = Math.max(0, Math.min(5, Math.round(Number(input.iconIndex) || 0)));
-  const adminEmail = user.email.slice(0, 120);
 
   if (cleanName.length < 2) {
     throw new Error('Service name must be at least 2 characters.');
@@ -307,7 +465,6 @@ export async function saveServiceInFirestore(input: UpsertServiceInput): Promise
         tagline: cleanTagline,
         priceInr: safePrice,
         iconIndex: safeIconIndex,
-        updatedByEmail: adminEmail,
         updatedAt: serverTimestamp(),
       });
     } else {
@@ -317,7 +474,6 @@ export async function saveServiceInFirestore(input: UpsertServiceInput): Promise
         tagline: cleanTagline,
         priceInr: safePrice,
         iconIndex: safeIconIndex,
-        updatedByEmail: adminEmail,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });

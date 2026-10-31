@@ -39,3 +39,79 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Dedicated Phone Landscape Optimizations (Phones sideways: height <= 520px) */
+@media (orientation: landscape) and (max-height: 520px) {
+  .phone-landscape-header {
+    height: 2.75rem !important; /* 44px */
+  }
+  .phone-landscape-main {
+    padding-top: 2.75rem !important;
+  }
+  .phone-landscape-hero-section {
+    padding-top: 0.5rem !important;
+    padding-bottom: 1rem !important;
+  }
+  .phone-landscape-hero-grid {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
+    align-items: center !important;
+  }
+  .phone-landscape-hero-text {
+    grid-column: span 7 / span 7 !important;
+    order: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.45rem !important;
+  }
+  .phone-landscape-hero-title {
+    font-size: 1.3rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 0 !important;
+  }
+  .phone-landscape-hero-desc {
+    font-size: 0.75rem !important;
+    line-height: 1.25 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+  .phone-landscape-hero-cta-wrap {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    padding-top: 0.15rem !important;
+  }
+  .phone-landscape-hero-btn {
+    padding: 0.4rem 0.85rem !important;
+    min-height: 34px !important;
+    font-size: 0.75rem !important;
+    border-radius: 0.75rem !important;
+  }
+  .phone-landscape-hero-trust {
+    padding-top: 0.15rem !important;
+    font-size: 0.7rem !important;
+    gap: 0.5rem !important;
+  }
+  .phone-landscape-hero-illustration {
+    grid-column: span 5 / span 5 !important;
+    order: 2 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+  .phone-landscape-hero-illustration-box {
+    max-width: 210px !important;
+    max-height: 200px !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+  .phone-landscape-brands-strip {
+    margin-top: 0.75rem !important;
+    padding-top: 0.5rem !important;
+  }
+}
