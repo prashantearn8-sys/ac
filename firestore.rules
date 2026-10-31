@@ -15,6 +15,14 @@ service cloud.firestore {
       return isSignedIn() && request.auth.token.email_verified == true;
     }
 
+    function isAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'coolbrosacservice@gmail.com' ||
+        request.auth.token.email == 'burnster1826@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
     function isValidId(id) {
       return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
@@ -37,14 +45,7 @@ service cloud.firestore {
     }
 
     function isValidServiceType(val) {
-      return val is string && val.size() <= 60 && (
-        val == 'Foam Power Jet Service' ||
-        val == 'Anti-Rust Deep Chemical Wash' ||
-        val == 'Gas Charging & Leak Fix' ||
-        val == 'Diagnostic & PCB Repair' ||
-        val == 'Installation / Uninstallation' ||
-        val == 'Annual Maintenance Contract (AMC)'
-      );
+      return val is string && val.size() >= 2 && val.size() <= 80;
     }
 
     function isValidTonnage(val) {
@@ -89,6 +90,38 @@ service cloud.firestore {
     }
 
     // 3. Entity Validation Blueprints (Anti-Update-Gap)
+    function isValidServicePackage(data) {
+      return data.keys().hasAll([
+        'id',
+        'name',
+        'tagline',
+        'priceInr',
+        'iconIndex',
+        'updatedByEmail',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'id',
+        'name',
+        'tagline',
+        'priceInr',
+        'iconIndex',
+        'updatedByEmail',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      isValidId(data.id) &&
+      data.name is string && data.name.size() >= 2 && data.name.size() <= 80 &&
+      data.tagline is string && data.tagline.size() <= 200 &&
+      data.priceInr is number && data.priceInr >= 49 && data.priceInr <= 500000 &&
+      data.iconIndex is number && data.iconIndex >= 0 && data.iconIndex <= 5 &&
+      data.updatedByEmail is string && data.updatedByEmail.size() >= 5 && data.updatedByEmail.size() <= 120 &&
+      data.updatedByEmail == request.auth.token.email &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
     function isValidBooking(data) {
       return data.keys().hasAll([
         'userId',
@@ -250,9 +283,34 @@ service cloud.firestore {
       data.createdAt is timestamp;
     }
 
-    // 4. Collection Rules: /bookings/{bookingId}
+    // 4. Collection Rules: /services/{serviceId} (Publicly Readable Catalog, Admin-Only Write)
+    match /services/{serviceId} {
+      allow get: if isValidId(serviceId);
+      allow list: if true;
+
+      allow create: if isValidId(serviceId) &&
+        isValidServicePackage(incoming()) &&
+        incoming().id == serviceId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+
+      allow update: if isValidId(serviceId) &&
+        isValidServicePackage(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        isAdmin() && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['priceInr', 'updatedByEmail', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'tagline', 'priceInr', 'iconIndex', 'updatedByEmail', 'updatedAt'])
+        );
+
+      allow delete: if isValidId(serviceId) && isAdmin();
+    }
+
+    // 5. Collection Rules: /bookings/{bookingId}
     match /bookings/{bookingId} {
-      allow get: if isSignedIn() && isValidId(bookingId) && existing().userId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(bookingId) && (existing().userId == request.auth.uid || isAdmin());
       allow list: if isSignedIn() && existing().userId == request.auth.uid;
 
       allow create: if isVerifiedUser() &&
@@ -271,16 +329,17 @@ service cloud.firestore {
         incoming().updatedAt == request.time &&
         existing().status != 'completed' &&
         existing().status != 'cancelled' && (
+          isAdmin() ||
           incoming().diff(existing()).affectedKeys().hasOnly(['scheduledDate', 'timeSlot', 'notes', 'updatedAt']) ||
           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
         );
 
       allow delete: if isVerifiedUser() &&
         isValidId(bookingId) &&
-        existing().userId == request.auth.uid;
+        (existing().userId == request.auth.uid || isAdmin());
     }
 
-    // 5. Collection Rules: /reminders/{reminderId}
+    // 6. Collection Rules: /reminders/{reminderId}
     match /reminders/{reminderId} {
       allow get: if isSignedIn() && isValidId(reminderId) && existing().userId == request.auth.uid;
       allow list: if isSignedIn() && existing().userId == request.auth.uid;
@@ -307,9 +366,9 @@ service cloud.firestore {
         existing().userId == request.auth.uid;
     }
 
-    // 6. Collection Rules: /messages/{messageId}
+    // 7. Collection Rules: /messages/{messageId}
     match /messages/{messageId} {
-      allow get: if isSignedIn() && isValidId(messageId) && existing().userId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(messageId) && (existing().userId == request.auth.uid || isAdmin());
       allow list: if isSignedIn() && existing().userId == request.auth.uid;
 
       allow create: if isVerifiedUser() &&
@@ -319,10 +378,10 @@ service cloud.firestore {
 
       allow delete: if isVerifiedUser() &&
         isValidId(messageId) &&
-        existing().userId == request.auth.uid;
+        (existing().userId == request.auth.uid || isAdmin());
     }
 
-    // 7. Collection Rules: /reviews/{reviewId} (Supports both Signed-In and Guest Reviews)
+    // 8. Collection Rules: /reviews/{reviewId} (Supports both Signed-In and Guest Reviews)
     match /reviews/{reviewId} {
       allow get: if isValidId(reviewId);
       allow list: if true;
@@ -335,9 +394,10 @@ service cloud.firestore {
         );
 
       allow delete: if isVerifiedUser() &&
-        isValidId(reviewId) &&
-        existing().authorId != 'guest' &&
-        existing().authorId == request.auth.uid;
+        isValidId(reviewId) && (
+          isAdmin() ||
+          (existing().authorId != 'guest' && existing().authorId == request.auth.uid)
+        );
     }
   }
 }

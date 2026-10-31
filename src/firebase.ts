@@ -138,8 +138,15 @@ export const VALIDATION_RULES = {
   ] as const,
 };
 
+export const ADMIN_EMAIL = 'coolbrosacservice@gmail.com';
+
+export function isAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  return email.trim().toLowerCase() === ADMIN_EMAIL;
+}
+
 export type AcType = (typeof VALIDATION_RULES.AC_TYPES)[number];
-export type ServiceType = (typeof VALIDATION_RULES.SERVICE_TYPES)[number];
+export type ServiceType = string;
 export type TonnageType = (typeof VALIDATION_RULES.TONNAGES)[number];
 export type TimeSlotType = (typeof VALIDATION_RULES.TIME_SLOTS)[number];
 export type BookingStatus = (typeof VALIDATION_RULES.BOOKING_STATUSES)[number];
@@ -559,4 +566,88 @@ export async function deleteReviewInFirestore(reviewId: string): Promise<void> {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
+
+export interface ServiceItemRecord {
+  id: string;
+  name: string;
+  tagline: string;
+  priceInr: number;
+  iconIndex: number;
+  updatedByEmail?: string;
+  createdAt?: Timestamp | null;
+  updatedAt?: Timestamp | null;
+}
+
+export interface UpsertServiceInput {
+  id?: string;
+  name: string;
+  tagline?: string;
+  priceInr: number;
+  iconIndex?: number;
+  existsInFirestore?: boolean;
+}
+
+export async function saveServiceInFirestore(input: UpsertServiceInput): Promise<string> {
+  const user = auth.currentUser;
+  if (!user || !user.email) {
+    throw new Error('Please sign in with coolbrosacservice@gmail.com to manage services.');
+  }
+
+  const serviceId =
+    input.id && VALIDATION_RULES.ID_PATTERN.test(input.id)
+      ? input.id.slice(0, 120)
+      : generateSafeDocId('srv');
+  const path = `services/${serviceId}`;
+
+  const cleanName = input.name.trim().slice(0, 80);
+  const cleanTagline = (input.tagline || '').trim().slice(0, 200);
+  const safePrice = Math.max(49, Math.min(500000, Math.round(Number(input.priceInr) || 499)));
+  const safeIconIndex = Math.max(0, Math.min(5, Math.round(Number(input.iconIndex) || 0)));
+  const adminEmail = user.email.slice(0, 120);
+
+  if (cleanName.length < 2) {
+    throw new Error('Service name must be at least 2 characters.');
+  }
+
+  try {
+    if (input.existsInFirestore) {
+      await updateDoc(doc(db, 'services', serviceId), {
+        name: cleanName,
+        tagline: cleanTagline,
+        priceInr: safePrice,
+        iconIndex: safeIconIndex,
+        updatedByEmail: adminEmail,
+        updatedAt: serverTimestamp(),
+      });
+    } else {
+      await setDoc(doc(db, 'services', serviceId), {
+        id: serviceId,
+        name: cleanName,
+        tagline: cleanTagline,
+        priceInr: safePrice,
+        iconIndex: safeIconIndex,
+        updatedByEmail: adminEmail,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    return serviceId;
+  } catch (error) {
+    handleFirestoreError(
+      error,
+      input.existsInFirestore ? OperationType.UPDATE : OperationType.CREATE,
+      path
+    );
+  }
+}
+
+export async function deleteServiceInFirestore(serviceId: string): Promise<void> {
+  const path = `services/${serviceId}`;
+  try {
+    await deleteDoc(doc(db, 'services', serviceId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
 

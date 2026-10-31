@@ -1,5 +1,64 @@
 {
   "entities": {
+    "ServicePackage": {
+      "title": "ServicePackage",
+      "description": "Represents an AC service item with image graphic index, service name, and price in INR, managed by the admin (coolbrosacservice@gmail.com) and displayed publicly on the website.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique slug/identifier for the service.",
+          "minLength": 2,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display title of the AC service.",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "tagline": {
+          "type": "string",
+          "description": "Short subtitle or description of the service.",
+          "maxLength": 200
+        },
+        "priceInr": {
+          "type": "number",
+          "description": "Service price in INR (between 49 and 500000)."
+        },
+        "iconIndex": {
+          "type": "number",
+          "description": "Index of the service illustration graphic (0 to 5)."
+        },
+        "updatedByEmail": {
+          "type": "string",
+          "description": "Verified email of the admin who created or updated this service.",
+          "minLength": 5,
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the service was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the service was last updated."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "tagline",
+        "priceInr",
+        "iconIndex",
+        "updatedByEmail",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
     "Booking": {
       "title": "Booking",
       "description": "Represents an AC servicing, repair, gas charging, or installation appointment booked by an authenticated customer.",
@@ -45,15 +104,8 @@
         "serviceType": {
           "type": "string",
           "description": "Specific service package selected.",
-          "enum": [
-            "Foam Power Jet Service",
-            "Anti-Rust Deep Chemical Wash",
-            "Gas Charging & Leak Fix",
-            "Diagnostic & PCB Repair",
-            "Installation / Uninstallation",
-            "Annual Maintenance Contract (AMC)"
-          ],
-          "maxLength": 60
+          "minLength": 2,
+          "maxLength": 80
         },
         "unitCount": {
           "type": "number",
@@ -304,15 +356,8 @@
         "serviceUsed": {
           "type": "string",
           "description": "AC service package reviewed.",
-          "enum": [
-            "Foam Power Jet Service",
-            "Anti-Rust Deep Chemical Wash",
-            "Gas Charging & Leak Fix",
-            "Diagnostic & PCB Repair",
-            "Installation / Uninstallation",
-            "Annual Maintenance Contract (AMC)"
-          ],
-          "maxLength": 60
+          "minLength": 2,
+          "maxLength": 80
         },
         "locality": {
           "type": "string",
@@ -345,11 +390,17 @@
     }
   },
   "firestore": {
+    "/services/{serviceId}": {
+      "schema": {
+        "$ref": "#/entities/ServicePackage"
+      },
+      "description": "Stores AC services and live pricing configured by the admin (coolbrosacservice@gmail.com) and publicly readable by all visitors."
+    },
     "/bookings/{bookingId}": {
       "schema": {
         "$ref": "#/entities/Booking"
       },
-      "description": "Stores customer AC service bookings, isolated strictly to the authenticated owner."
+      "description": "Stores customer AC service bookings, isolated strictly to the authenticated owner or admin."
     },
     "/reminders/{reminderId}": {
       "schema": {

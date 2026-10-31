@@ -26,23 +26,22 @@ import {
   UserCheck,
 } from 'lucide-react';
 import {
-  AcType,
   CustomerReviewRecord,
   MessageSubject,
   OperationType,
+  ServiceItemRecord,
   ServiceType,
-  VALIDATION_RULES,
   auth,
   createCustomerMessageInFirestore,
   createReviewInFirestore,
   db,
   deleteReviewInFirestore,
   handleFirestoreError,
+  isAdminEmail,
   signInWithGoogle,
   signOutUser,
 } from './firebase';
 import {
-  AC_TYPE_MULTIPLIERS,
   PROTOCOL_STEPS,
   SERVICE_PACKAGES,
   ServicePackageSpec,
@@ -55,6 +54,10 @@ import {
   HeroCoolingIllustration,
   ServiceCardIllustration,
 } from './components/AcGraphics';
+import {
+  AdminPage,
+  DisplayServiceItem,
+} from './components/AdminPage';
 import {
   LEGAL_PAGE_TABS,
   LegalPageSlug,
@@ -165,92 +168,23 @@ const INITIAL_FEATURED_REVIEWS: CustomerReviewRecord[] = [
   },
 ];
 
-type ServiceCategoryFilter = 'all' | 'cleaning' | 'repair' | 'amc';
-
-const SERVICE_CATEGORY_MAP: Record<string, ServiceCategoryFilter> = {
-  'foam-jet': 'cleaning',
-  'anti-rust': 'cleaning',
-  'gas-charging': 'repair',
-  'diagnostic-pcb': 'repair',
-  'annual-amc': 'amc',
-  'install-uninstall': 'amc',
+const STAR_RATING_LABELS: Record<number, string> = {
+  1: 'Poor',
+  2: 'Fair',
+  3: 'Good',
+  4: 'Very Good',
+  5: 'Excellent',
 };
-
-const SERVICE_HIGHLIGHT_BADGE: Record<string, string> = {
-  'foam-jet': 'MOST BOOKED',
-  'anti-rust': 'COIL SHIELD',
-  'gas-charging': '500-MICRON VACUUM',
-  'annual-amc': 'BEST VALUE · 365D',
-  'diagnostic-pcb': 'WAIVED ON REPAIR',
-  'install-uninstall': 'LASER-LEVELED',
-};
-
-/**
- * 6-Card Color Theme Mapping (Light Blue #7DD3FC, Gray #F3F3F3, Dark #191A23)
- */
-function getServiceCardTheme(index: number) {
-  const mod = index % 3;
-  if (mod === 0) {
-    return {
-      cardBg: 'bg-white text-[#191A23]',
-      headerStripBg: 'bg-[#F3F3F3] border-[#191A23]/15',
-      labelBg: 'bg-[#7DD3FC] text-[#191A23]',
-      badgeBg: 'bg-[#191A23] text-[#7DD3FC]',
-      gainBadgeBg: 'bg-[#F3F3F3] text-[#191A23] border-[#191A23]/20',
-      illustrationBox: 'bg-[#F3F3F3] border-[#191A23]/15',
-      metricsBg: 'bg-[#F3F3F3] border-[#191A23]/20',
-      checkCircle: 'bg-[#7DD3FC] text-[#191A23] border-[#191A23]',
-      secondaryBtn:
-        'bg-[#191A23] text-white hover:bg-[#191A23]/90 border-[#191A23]',
-      learnText: 'text-[#191A23]',
-      metaText: 'text-[#191A23]/75',
-      priceText: 'text-[#191A23]',
-    };
-  }
-  if (mod === 1) {
-    return {
-      cardBg: 'bg-[#F3F3F3] text-[#191A23]',
-      headerStripBg: 'bg-white border-[#191A23]/15',
-      labelBg: 'bg-[#7DD3FC] text-[#191A23]',
-      badgeBg: 'bg-[#191A23] text-white',
-      gainBadgeBg: 'bg-white text-[#191A23] border-[#191A23]/20',
-      illustrationBox: 'bg-white border-[#191A23]/15',
-      metricsBg: 'bg-white border-[#191A23]/20',
-      checkCircle: 'bg-[#7DD3FC] text-[#191A23] border-[#191A23]',
-      secondaryBtn:
-        'bg-[#191A23] text-white hover:bg-[#191A23]/90 border-[#191A23]',
-      learnText: 'text-[#191A23]',
-      metaText: 'text-[#191A23]/75',
-      priceText: 'text-[#191A23]',
-    };
-  }
-  return {
-    cardBg: 'bg-[#191A23] text-white',
-    headerStripBg: 'bg-white/5 border-white/15',
-    labelBg: 'bg-[#7DD3FC] text-[#191A23]',
-    badgeBg: 'bg-[#7DD3FC] text-[#191A23]',
-    gainBadgeBg: 'bg-white/10 text-[#7DD3FC] border-white/20',
-    illustrationBox: 'bg-white/5 border-white/15',
-    metricsBg: 'bg-white/5 border-white/15',
-    checkCircle: 'bg-[#7DD3FC] text-[#191A23] border-[#7DD3FC]',
-    secondaryBtn:
-      'bg-white text-[#191A23] hover:bg-[#7DD3FC] border-white',
-    learnText: 'text-white',
-    metaText: 'text-white/75',
-    priceText: 'text-[#7DD3FC]',
-  };
-}
-
-function splitServiceTitle(name: string): [string, string] {
-  const words = name.split(' ');
-  const mid = Math.ceil(words.length / 2);
-  return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
-}
 
 export default function App() {
   // Auth State
   const [user, setUser] = useState<User | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const isAdmin = isAdminEmail(user?.email);
+
+  // Live Firestore Services State (Admin Pricing & Custom Services)
+  const [firestoreServices, setFirestoreServices] = useState<ServiceItemRecord[]>([]);
+  const [activeAdminPage, setActiveAdminPage] = useState(false);
 
   // Live Firestore Reviews State
   const [firestoreReviews, setFirestoreReviews] = useState<CustomerReviewRecord[]>([]);
@@ -278,18 +212,23 @@ export default function App() {
     useState<ServicePackageSpec | null>(null);
   const [activeLegalPage, setActiveLegalPage] = useState<LegalPageSlug | null>(null);
 
-  // Interactive Service Section Filter & Live Rate Configurator State
-  const [serviceCategory, setServiceCategory] = useState<ServiceCategoryFilter>('all');
-  const [selectedAcType, setSelectedAcType] = useState<AcType>('Split AC');
-  const [selectedUnitCount, setSelectedUnitCount] = useState<number>(1);
-
   const openLegalPage = (slug: LegalPageSlug) => {
+    setActiveAdminPage(false);
     setActiveLegalPage(slug);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const openAdminDashboard = () => {
+    setActiveLegalPage(null);
+    setActiveAdminPage(true);
+    setMobileMenuOpen(false);
+    setProfileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const navigateHomeSection = (sectionId?: string) => {
+    setActiveAdminPage(false);
     setActiveLegalPage(null);
     setMobileMenuOpen(false);
     if (!sectionId) {
@@ -351,6 +290,25 @@ export default function App() {
     return () => unsubAuth();
   }, []);
 
+  // Listen to Public Services in Firestore (Admin pricing & newly added services)
+  useEffect(() => {
+    const servicesQuery = query(collection(db, 'services'));
+    const unsubServices = onSnapshot(
+      servicesQuery,
+      (snapshot) => {
+        const rows: ServiceItemRecord[] = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<ServiceItemRecord, 'id'>),
+        }));
+        setFirestoreServices(rows);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'services');
+      }
+    );
+    return () => unsubServices();
+  }, []);
+
   // Listen to Public Customer Reviews in Firestore (works for both signed-in and guest visitors)
   useEffect(() => {
     const reviewsQuery = query(collection(db, 'reviews'));
@@ -374,6 +332,33 @@ export default function App() {
     );
     return () => unsubReviews();
   }, []);
+
+  // Merge default SERVICE_PACKAGES with Firestore overrides and custom added services
+  const displayServices: DisplayServiceItem[] = [
+    ...SERVICE_PACKAGES.map((pkg, idx) => {
+      const fsMatch = firestoreServices.find((f) => f.id === pkg.id);
+      return {
+        id: pkg.id,
+        name: fsMatch ? fsMatch.name : pkg.name,
+        tagline: fsMatch ? fsMatch.tagline : pkg.tagline,
+        priceInr: fsMatch ? fsMatch.priceInr : pkg.basePriceInr,
+        iconIndex: fsMatch ? fsMatch.iconIndex : idx % 6,
+        isDefault: true,
+        existsInFirestore: Boolean(fsMatch),
+      };
+    }),
+    ...firestoreServices
+      .filter((f) => !SERVICE_PACKAGES.some((p) => p.id === f.id))
+      .map((f) => ({
+        id: f.id,
+        name: f.name,
+        tagline: f.tagline,
+        priceInr: f.priceInr,
+        iconIndex: f.iconIndex ?? 0,
+        isDefault: false,
+        existsInFirestore: true,
+      })),
+  ];
 
   const allReviews = [...firestoreReviews, ...INITIAL_FEATURED_REVIEWS];
   const filteredReviews =
@@ -401,19 +386,14 @@ export default function App() {
 
   const handleSelectPackageForBooking = (
     serviceName: ServiceType,
-    customUnitSummary?: string,
-    estimatedTotalInr?: number
+    priceInr?: number
   ) => {
     setSelectedServiceModal(null);
     setMsgSubject('General AC Inquiry');
-    const unitLabel =
-      customUnitSummary ||
-      `${selectedAcType} (${selectedUnitCount} ${selectedUnitCount === 1 ? 'Unit' : 'Units'})`;
-    setMsgAcDetails(unitLabel);
     setMsgBody(
-      estimatedTotalInr
-        ? `Hi Cool Bros AC Service, I would like to book ${serviceName} for ${unitLabel} (Est. ₹${estimatedTotalInr.toLocaleString('en-IN')}). Please share available technician slots.`
-        : `Hi Cool Bros AC Service, I would like to book / inquire about ${serviceName} for ${unitLabel}.`
+      priceInr
+        ? `Hi Cool Bros AC Service, I would like to book ${serviceName} (₹${priceInr.toLocaleString('en-IN')}).`
+        : `Hi Cool Bros AC Service, I would like to book / inquire about ${serviceName}.`
     );
     const el = document.getElementById('send-message');
     el?.scrollIntoView({ behavior: 'smooth' });
@@ -655,6 +635,19 @@ export default function App() {
             >
               Contact Us
             </a>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={openAdminDashboard}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-[#191A23] transition-colors cursor-pointer ${
+                  activeAdminPage
+                    ? 'bg-[#191A23] text-[#7DD3FC]'
+                    : 'bg-[#7DD3FC] text-[#191A23] hover:bg-[#38BDF8]'
+                }`}
+              >
+                Admin Page
+              </button>
+            )}
           </nav>
 
           {/* Zone 3: Primary Action / User Account Popover + Mobile/Tablet Menu Toggle */}
@@ -692,7 +685,7 @@ export default function App() {
                       className="fixed inset-0 z-40"
                       onClick={() => setProfileMenuOpen(false)}
                     />
-                    <div className="absolute right-0 top-full mt-2.5 w-64 bg-white border border-[#191A23] rounded-2xl p-3.5 z-50 space-y-3">
+                    <div className="absolute right-0 top-full mt-2.5 w-64 bg-white border border-[#191A23] rounded-2xl p-3.5 z-50 space-y-2.5">
                       <div className="flex items-center gap-3 px-2 py-1.5 border-b border-[#191A23]/15">
                         {user.photoURL && !avatarImgError ? (
                           <img
@@ -709,13 +702,24 @@ export default function App() {
                         )}
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-[#191A23] truncate">
-                            {user.displayName || 'Verified Customer'}
+                            {isAdmin ? 'Admin Account' : user.displayName || 'Verified Customer'}
                           </p>
                           <p className="text-[11px] font-mono text-[#191A23]/70 truncate">
                             {user.email}
                           </p>
                         </div>
                       </div>
+
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={openAdminDashboard}
+                          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 min-h-[40px] text-xs font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] hover:bg-[#38BDF8] rounded-xl transition-colors cursor-pointer"
+                        >
+                          <ShieldCheck className="w-4 h-4 shrink-0" />
+                          <span>Open Admin Page</span>
+                        </button>
+                      )}
 
                       <button
                         type="button"
@@ -830,6 +834,17 @@ export default function App() {
                   </a>
                 </div>
 
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={openAdminDashboard}
+                    className="w-full min-h-[46px] px-4 rounded-xl bg-[#7DD3FC] text-[#191A23] border border-[#191A23] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <ShieldCheck className="w-4 h-4 shrink-0" />
+                    <span>Open Admin Page</span>
+                  </button>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   <a
                     href={buildWhatsAppUrl(
@@ -873,7 +888,14 @@ export default function App() {
       )}
 
       <main className="flex-1">
-        {activeLegalPage ? (
+        {activeAdminPage ? (
+          <AdminPage
+            user={user}
+            services={displayServices}
+            onSignIn={handleGoogleSignIn}
+            onBackToHome={() => navigateHomeSection()}
+          />
+        ) : activeLegalPage ? (
           <LegalPageView
             activeSlug={activeLegalPage}
             onSelectSlug={(slug) => openLegalPage(slug)}
@@ -982,445 +1004,94 @@ export default function App() {
               </div>
             </section>
 
-            {/* SECTION 01: REDESIGNED SERVICES & LIVE RATE CONFIGURATOR */}
-            <section id="services" className="py-12 sm:py-16 lg:py-24">
+            {/* SECTION 01: SIMPLE SERVICES SECTION (IMAGE, PRICE, CONTACT) */}
+            <section id="services" className="py-12 sm:py-16 lg:py-24 bg-[#F8FAFC] border-y border-[#191A23]/10">
               <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
-                {/* Section Header + Service Guarantee Highlights */}
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-[#191A23]/15">
-                  <div className="space-y-3 sm:space-y-4 max-w-2xl">
-                    <div className="inline-flex items-center gap-2">
-                      <span className="bg-[#7DD3FC] px-3.5 py-1 rounded-lg border border-[#191A23] text-2xl sm:text-3xl font-display font-bold text-[#191A23]">
+                {/* Redesigned "Services" Heading */}
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 sm:pb-10">
+                  <div className="space-y-2.5">
+                    <span className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.2em] text-[#0284C7]">
+                      <span className="w-2 h-2 rounded-full bg-[#0284C7]" />
+                      <span>OUR AC SERVICES</span>
+                    </span>
+                    <div className="space-y-2">
+                      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-[#191A23]">
                         Services
-                      </span>
-                      <span className="text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-[#F3F3F3] border border-[#191A23]/20 text-[#191A23]">
-                        06 Factory-Spec Packages
-                      </span>
+                      </h2>
+                      <div className="h-1.5 w-20 rounded-full bg-gradient-to-r from-[#0284C7] to-[#7DD3FC]" />
                     </div>
-                    <p className="text-sm sm:text-base text-[#191A23]/80 leading-relaxed">
-                      Precision HVAC maintenance, 140 PSI hydro-jet cleaning, nitrogen leak testing,
-                      and inverter PCB diagnostics across Delhi &amp; Gurugram. Select your AC type
-                      below for instant, upfront pricing:
-                    </p>
                   </div>
 
-                  {/* Key Engineering Guarantees */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 shrink-0">
-                    <div className="bg-[#F3F3F3] border border-[#191A23] rounded-xl px-3.5 py-2.5">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-[#191A23]/65">
-                        INDOOR PROTECTION
-                      </p>
-                      <p className="text-xs sm:text-sm font-display font-bold text-[#191A23] mt-0.5">
-                        360° Zero-Mess Jacket
-                      </p>
-                    </div>
-                    <div className="bg-[#F3F3F3] border border-[#191A23] rounded-xl px-3.5 py-2.5">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-[#191A23]/65">
-                        SERVICE WARRANTY
-                      </p>
-                      <p className="text-xs sm:text-sm font-display font-bold text-[#191A23] mt-0.5">
-                        Up to 365 Days Cover
-                      </p>
-                    </div>
-                    <div className="col-span-2 sm:col-span-1 bg-[#7DD3FC]/35 border border-[#191A23] rounded-xl px-3.5 py-2.5">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-[#191A23]/75">
-                        DISPATCH SLA
-                      </p>
-                      <p className="text-xs sm:text-sm font-display font-bold text-[#191A23] mt-0.5">
-                        60-Min Doorstep Arrival
-                      </p>
-                    </div>
-                  </div>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={openAdminDashboard}
+                      className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#191A23] text-[#7DD3FC] text-xs font-mono font-bold hover:bg-[#0284C7] hover:text-white transition-colors cursor-pointer"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Edit Prices / Add Services</span>
+                    </button>
+                  )}
                 </div>
 
-                {/* INTERACTIVE CONTROL BAR: Category Filter + Live AC Type & Unit Rate Configurator */}
-                <div className="mt-6 sm:mt-8 bg-[#F3F3F3] border border-[#191A23] rounded-[22px] sm:rounded-[28px] p-4 sm:p-6 space-y-4 sm:space-y-5">
-                  <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-                    {/* Category Filter Tabs */}
-                    <div className="space-y-1.5">
-                      <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-[#191A23]/70">
-                        1. Filter by Service Category
-                      </span>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {(
-                          [
-                            { id: 'all', label: 'All Packages (6)' },
-                            { id: 'cleaning', label: 'Jet Wash & Chemical Clean' },
-                            { id: 'repair', label: 'Gas Charging & PCB Repair' },
-                            { id: 'amc', label: 'AMC & Installation' },
-                          ] as { id: ServiceCategoryFilter; label: string }[]
-                        ).map((tab) => {
-                          const active = serviceCategory === tab.id;
-                          return (
-                            <button
-                              key={tab.id}
-                              type="button"
-                              onClick={() => setServiceCategory(tab.id)}
-                              className={`px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                                active
-                                  ? 'bg-[#191A23] text-[#7DD3FC] border-[#191A23] shadow-[0_2px_0_0_#7DD3FC]'
-                                  : 'bg-white text-[#191A23] border-[#191A23]/25 hover:border-[#191A23]'
-                              }`}
-                            >
-                              {tab.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* AC System Type & Multi-Unit Configurator */}
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
-                      {/* AC Type Selector */}
-                      <div className="space-y-1.5">
-                        <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-[#191A23]/70">
-                          2. Select AC System Type
-                        </span>
-                        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 bg-white p-1 rounded-xl border border-[#191A23]">
-                          {(Object.keys(AC_TYPE_MULTIPLIERS) as AcType[]).map((type) => {
-                            const isSelected = selectedAcType === type;
-                            return (
-                              <button
-                                key={type}
-                                type="button"
-                                onClick={() => setSelectedAcType(type)}
-                                className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                                  isSelected
-                                    ? 'bg-[#7DD3FC] text-[#191A23] border border-[#191A23] font-bold'
-                                    : 'text-[#191A23]/75 hover:text-[#191A23] hover:bg-[#F3F3F3]'
-                                }`}
-                              >
-                                {type}
-                              </button>
-                            );
-                          })}
-                        </div>
+                {/* Simple Service Cards Grid: Service Image + Price + Contact */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+                  {displayServices.map((item, idx) => (
+                    <motion.article
+                      key={item.id}
+                      initial={{ opacity: 0, y: 18 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: '-30px' }}
+                      transition={{
+                        duration: 0.35,
+                        delay: idx * 0.05,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                      whileHover={{ y: -4 }}
+                      className="bg-white border-2 border-[#191A23] rounded-3xl overflow-hidden flex flex-col justify-between shadow-[0_5px_0_0_#191A23] transition-all"
+                    >
+                      {/* 1. Service Image */}
+                      <div className="bg-gradient-to-b from-[#E0F2FE] to-[#F8FAFC] border-b border-[#191A23]/15 p-6 flex items-center justify-center h-48">
+                        <ServiceCardIllustration index={item.iconIndex} />
                       </div>
 
-                      {/* Unit Count Selector with Multi-Unit Discount */}
-                      <div className="space-y-1.5">
-                        <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-[#191A23]/70">
-                          3. Units {selectedUnitCount >= 2 && (
-                            <span className="text-[#0284C7] font-bold">
-                              ({selectedUnitCount >= 4 ? '15% OFF' : selectedUnitCount === 3 ? '10% OFF' : '5% OFF'})
-                            </span>
-                          )}
-                        </span>
-                        <div className="inline-flex items-center bg-white p-1 rounded-xl border border-[#191A23] gap-1">
-                          {[1, 2, 3, 4].map((count) => {
-                            const active = selectedUnitCount === count;
-                            return (
-                              <button
-                                key={count}
-                                type="button"
-                                onClick={() => setSelectedUnitCount(count)}
-                                className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
-                                  active
-                                    ? 'bg-[#191A23] text-[#7DD3FC]'
-                                    : 'text-[#191A23]/75 hover:bg-[#F3F3F3]'
-                                }`}
-                              >
-                                {count} {count === 1 ? 'AC' : 'ACs'}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Active Configuration Summary Strip */}
-                  <div className="pt-3 border-t border-[#191A23]/10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-[#191A23]/80">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-block w-2 h-2 rounded-full bg-[#0284C7]" />
-                      <span>
-                        Showing live rates for{' '}
-                        <strong className="text-[#191A23]">
-                          {selectedUnitCount} × {selectedAcType}
-                        </strong>{' '}
-                        ({AC_TYPE_MULTIPLIERS[selectedAcType].note})
-                      </span>
-                    </div>
-                    {selectedUnitCount > 1 && (
-                      <span className="bg-[#86EFAC] border border-[#191A23] px-2.5 py-0.5 rounded-md text-[11px] font-bold text-[#191A23]">
-                        Multi-AC Fleet Discount Applied Automatically
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* REDESIGNED SERVICE CARDS GRID (1 col mobile, 2 cols tablet & desktop) */}
-                <div className="mt-8 sm:mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-7 lg:gap-8">
-                  {SERVICE_PACKAGES.filter(
-                    (pkg) =>
-                      serviceCategory === 'all' ||
-                      SERVICE_CATEGORY_MAP[pkg.id] === serviceCategory
-                  ).map((pkg, idx) => {
-                    const originalIndex = SERVICE_PACKAGES.findIndex((p) => p.id === pkg.id);
-                    const theme = getServiceCardTheme(originalIndex);
-                    const [titleLine1, titleLine2] = splitServiceTitle(pkg.name);
-                    const highlightBadge = SERVICE_HIGHLIGHT_BADGE[pkg.id];
-
-                    // Calculate live price based on selected AC Type & Unit Count
-                    const acMultiplier = AC_TYPE_MULTIPLIERS[selectedAcType]?.multiplier || 1;
-                    const singleUnitRate = Math.round(pkg.basePriceInr * acMultiplier);
-                    const multiDiscount =
-                      selectedUnitCount >= 4
-                        ? 0.15
-                        : selectedUnitCount === 3
-                        ? 0.1
-                        : selectedUnitCount === 2
-                        ? 0.05
-                        : 0;
-                    const totalRate = Math.round(
-                      singleUnitRate * selectedUnitCount * (1 - multiDiscount)
-                    );
-                    const unitSummaryLabel = `${selectedAcType} (${selectedUnitCount} ${
-                      selectedUnitCount === 1 ? 'Unit' : 'Units'
-                    })`;
-
-                    return (
-                      <motion.article
-                        key={pkg.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: '-30px' }}
-                        transition={{
-                          duration: 0.35,
-                          delay: idx * 0.05,
-                          ease: [0.16, 1, 0.3, 1],
-                        }}
-                        whileHover={{ y: -4 }}
-                        className={`${theme.cardBg} border-2 border-[#191A23] rounded-[26px] sm:rounded-[34px] p-5 sm:p-7 lg:p-8 flex flex-col justify-between gap-5 shadow-[0_6px_0_0_#191A23] transition-all`}
-                      >
-                        {/* Top Telemetry Header Bar */}
-                        <div
-                          className={`flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 rounded-xl border ${theme.headerStripBg}`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`px-2.5 py-0.5 rounded-md text-xs font-mono font-bold ${theme.badgeBg}`}
-                            >
-                              #{pkg.index}
-                            </span>
-                            <span className="text-xs font-mono font-semibold opacity-85">
-                              {pkg.pressurePsi}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5">
-                            {highlightBadge && (
-                              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-[#7DD3FC] text-[#191A23] border border-[#191A23]">
-                                {highlightBadge}
-                              </span>
-                            )}
-                            <span
-                              className={`hidden sm:inline-block px-2.5 py-0.5 rounded-md text-[11px] font-mono font-semibold border ${theme.gainBadgeBg}`}
-                            >
-                              {pkg.expectedCoolingGain}
-                            </span>
-                          </div>
+                      {/* 2. Service Name & Price + 3. Contact */}
+                      <div className="p-6 flex flex-col justify-between flex-1 gap-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="font-display font-bold text-lg sm:text-xl text-[#191A23] leading-snug">
+                            {item.name}
+                          </h3>
+                          <span className="shrink-0 px-3 py-1 rounded-xl bg-[#7DD3FC] border border-[#191A23] font-mono font-bold text-lg sm:text-xl text-[#191A23] tabular-nums">
+                            ₹{item.priceInr.toLocaleString('en-IN')}
+                          </span>
                         </div>
 
-                        {/* Title + Tagline + Bespoke HVAC Illustration */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                          <div className="space-y-2.5 flex-1">
-                            <h3 className="font-display font-bold text-xl sm:text-2xl leading-snug flex flex-col items-start">
-                              <span
-                                className={`${theme.labelBg} px-2.5 py-0.5 rounded-md border border-[#191A23]`}
-                              >
-                                {titleLine1}
-                              </span>
-                              {titleLine2 && (
-                                <span
-                                  className={`${theme.labelBg} px-2.5 py-0.5 rounded-md border border-[#191A23] -mt-0.5`}
-                                >
-                                  {titleLine2}
-                                </span>
-                              )}
-                            </h3>
-                            <p className={`text-xs sm:text-sm leading-relaxed ${theme.metaText}`}>
-                              {pkg.tagline}
-                            </p>
-                          </div>
-
-                          {/* Compact Technical Illustration Box */}
-                          <div
-                            className={`w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border ${theme.illustrationBox} flex items-center justify-center p-2 shrink-0 self-end sm:self-center`}
-                          >
-                            <div className="scale-75 sm:scale-90 origin-center">
-                              <ServiceCardIllustration index={originalIndex} />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Visible Engineering Deliverables Checklist */}
-                        <div className="space-y-2 pt-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-[11px] font-mono font-bold uppercase tracking-wider opacity-75">
-                              Included Engineering Protocol:
-                            </p>
-                            <span className="sm:hidden text-[11px] font-mono font-semibold text-[#0284C7]">
-                              {pkg.expectedCoolingGain}
-                            </span>
-                          </div>
-                          <ul className="grid grid-cols-1 gap-2">
-                            {pkg.deliverables.map((item, dIdx) => (
-                              <li
-                                key={dIdx}
-                                className="flex items-start gap-2.5 text-xs sm:text-[13px] leading-snug"
-                              >
-                                <span
-                                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${theme.checkCircle}`}
-                                >
-                                  <Check className="w-2.5 h-2.5 stroke-[3]" />
-                                </span>
-                                <span className="opacity-90">{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* 3-Column Telemetry & Live Rate Bar */}
-                        <div
-                          className={`grid grid-cols-3 gap-2 rounded-2xl border p-3 sm:p-3.5 ${theme.metricsBg}`}
-                        >
-                          <div>
-                            <p className="text-[10px] font-mono uppercase opacity-65">
-                              {selectedUnitCount > 1
-                                ? `TOTAL (${selectedUnitCount} ACs)`
-                                : `${selectedAcType.toUpperCase()} RATE`}
-                            </p>
-                            <div className="flex items-baseline gap-1.5 mt-0.5">
-                              <span
-                                className={`text-lg sm:text-xl font-mono font-bold tabular-nums ${theme.priceText}`}
-                              >
-                                ₹{totalRate.toLocaleString('en-IN')}
-                              </span>
-                              {selectedUnitCount > 1 && (
-                                <span className="text-[10px] font-mono opacity-70">
-                                  (₹{Math.round(totalRate / selectedUnitCount)}/AC)
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="border-x border-current/15 px-2.5">
-                            <p className="text-[10px] font-mono uppercase opacity-65">
-                              SERVICE TIME
-                            </p>
-                            <p className="text-sm sm:text-base font-mono font-bold tabular-nums mt-0.5">
-                              {pkg.durationMinutes} Mins
-                            </p>
-                          </div>
-
-                          <div className="pl-1">
-                            <p className="text-[10px] font-mono uppercase opacity-65">
-                              WARRANTY
-                            </p>
-                            <p className="text-sm sm:text-base font-mono font-bold tabular-nums mt-0.5">
-                              {pkg.warrantyDays} Days
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Card Footer Actions: Instant WhatsApp + Form Booking + Modal Spec */}
-                        <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                        {/* Contact Actions */}
+                        <div className="grid grid-cols-2 gap-2.5 pt-1">
                           <a
                             href={buildWhatsAppUrl(
-                              `Hi Cool Bros AC Service, I want to book *${pkg.name}* for *${unitSummaryLabel}* (Est. ₹${totalRate.toLocaleString('en-IN')}). Please share available technician slots.`
+                              `Hi Cool Bros AC Service, I want to book ${item.name} (₹${item.priceInr.toLocaleString('en-IN')}).`
                             )}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 min-h-[46px] text-xs sm:text-sm font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-xl hover:bg-[#4ADE80] active:translate-y-0.5 transition-all whitespace-nowrap"
+                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-3 min-h-[44px] text-xs sm:text-sm font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-xl hover:bg-[#4ADE80] transition-colors whitespace-nowrap"
                           >
                             <MessageCircle className="w-4 h-4 shrink-0" />
-                            <span>Book on WhatsApp</span>
+                            <span>WhatsApp</span>
                           </a>
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleSelectPackageForBooking(
-                                pkg.name,
-                                unitSummaryLabel,
-                                totalRate
-                              )
-                            }
-                            className={`inline-flex items-center justify-center gap-1.5 px-4 py-3 min-h-[46px] text-xs sm:text-sm font-semibold border rounded-xl transition-all cursor-pointer whitespace-nowrap ${theme.secondaryBtn}`}
+                          <a
+                            href="tel:+919560415262"
+                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-3 min-h-[44px] text-xs sm:text-sm font-semibold text-white bg-[#191A23] border border-[#191A23] rounded-xl hover:bg-[#0284C7] transition-colors whitespace-nowrap"
                           >
-                            <span>Schedule Online</span>
-                            <ArrowUpRight className="w-4 h-4 shrink-0" />
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setSelectedServiceModal(pkg)}
-                            title="View Full Package Specifications"
-                            className={`inline-flex items-center justify-center px-3 py-3 min-h-[46px] text-xs font-mono font-semibold underline underline-offset-4 ${theme.learnText} opacity-80 hover:opacity-100 cursor-pointer shrink-0`}
-                          >
-                            Specs
-                          </button>
+                            <Phone className="w-4 h-4 shrink-0" />
+                            <span>Contact</span>
+                          </a>
                         </div>
-                      </motion.article>
-                    );
-                  })}
-                </div>
-
-                {/* CALLOUT BANNER: 60-MIN EMERGENCY DISPATCH DESK */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="mt-10 sm:mt-14 bg-[#F3F3F3] border-2 border-[#191A23] rounded-[28px] sm:rounded-[36px] p-6 sm:p-10 lg:p-12 grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center shadow-[0_6px_0_0_#191A23]"
-                >
-                  <div className="md:col-span-8 lg:col-span-8 space-y-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="inline-flex items-center gap-2 bg-[#7DD3FC] border border-[#191A23] px-3 py-1 rounded-lg text-xs font-mono font-bold text-[#191A23]">
-                        <MapPin className="w-3.5 h-3.5 shrink-0" />
-                        <span>RAPID DISPATCH: DELHI &amp; GURUGRAM</span>
                       </div>
-                      <span className="text-xs font-mono font-semibold text-[#191A23]/75">
-                        · Same-Day Doorstep Slot Guaranteed
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-[#191A23] text-balance">
-                      Emergency AC breakdown, water leakage, or warm air in Delhi or Gurugram?
-                    </h3>
-
-                    <p className="text-sm sm:text-base text-[#191A23]/80 max-w-2xl leading-relaxed">
-                      Our mobile HVAC response vans carry R32/R410A refrigerant, digital manifold
-                      gauges, 140 PSI hydro-jet pumps, and genuine inverter PCB spares across Dwarka,
-                      South Delhi, Vasant Kunj, Janakpuri, DLF Phases 1–5, Golf Course Road, and Sohna Road.
-                    </p>
-
-                    <div className="pt-2 grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-3.5">
-                      <a
-                        href={buildWhatsAppUrl(
-                          'Hi Cool Bros AC Service, I need urgent 60-minute AC inspection / breakdown support.'
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[48px] text-sm font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-2xl hover:bg-[#4ADE80] transition-all whitespace-nowrap"
-                      >
-                        <MessageCircle className="w-4 h-4 shrink-0" />
-                        <span>WhatsApp +91 9560415262</span>
-                      </a>
-                      <a
-                        href="tel:+919560415262"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[48px] text-sm font-semibold text-white bg-[#191A23] rounded-2xl hover:bg-[#191A23]/90 transition-colors whitespace-nowrap"
-                      >
-                        <Phone className="w-4 h-4 shrink-0" />
-                        <span>Call Dispatch Desk</span>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="md:col-span-4 lg:col-span-4 hidden md:flex justify-end">
-                    <div className="w-44 h-44 lg:w-56 lg:h-56">
-                      <DispatchDeskIllustration />
-                    </div>
-                  </div>
-                </motion.div>
+                    </motion.article>
+                  ))}
+                </div>
               </div>
             </section>
 
@@ -1515,19 +1186,22 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* Aggregate Rating Summary */}
+                  {/* Aggregate Rating Summary (Mustard Yellow Stars) */}
                   <div className="bg-[#191A23] text-white border border-[#191A23] rounded-2xl px-5 py-3.5 flex items-center gap-4 self-start md:self-auto shrink-0">
                     <div>
-                      <p className="text-xl sm:text-2xl font-mono font-bold text-[#7DD3FC] tabular-nums leading-none">
+                      <p className="text-xl sm:text-2xl font-mono font-bold text-[#EAB308] tabular-nums leading-none">
                         {averageRating} / 5.0
                       </p>
                       <p className="text-[11px] font-mono text-white/70 mt-1">
                         {allReviews.length} Customer Reviews
                       </p>
                     </div>
-                    <div className="flex items-center gap-0.5 text-[#7DD3FC]">
+                    <div className="flex items-center gap-1 text-[#EAB308]">
                       {[1, 2, 3, 4, 5].map((s) => (
-                        <Star key={s} className="w-4 h-4 fill-[#7DD3FC] text-[#7DD3FC]" />
+                        <Star
+                          key={s}
+                          className="w-4 h-4 fill-[#EAB308] text-[#EAB308] drop-shadow-[0_1px_1px_rgba(0,0,0,0.4)]"
+                        />
                       ))}
                     </div>
                   </div>
@@ -1571,14 +1245,25 @@ export default function App() {
                     )}
 
                     <form onSubmit={handleReviewSubmit} className="space-y-4">
-                      {/* Interactive 1-5 Star Rating Picker */}
+                      {/* Redesigned Interactive 1-5 Mustard Yellow Star Rating Picker */}
                       <div>
-                        <label className="block text-xs font-bold text-[#191A23] mb-2">
-                          Your Star Rating *
-                        </label>
-                        <div className="flex items-center gap-1.5 sm:gap-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="block text-xs font-bold text-[#191A23]">
+                            Your Star Rating *
+                          </label>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FEF9C3] border border-[#CA8A04] text-[11px] font-mono font-bold text-[#854D0E]">
+                            <Star className="w-3 h-3 fill-[#EAB308] text-[#CA8A04]" />
+                            <span>
+                              {revHoverRating ?? revRating}.0 ·{' '}
+                              {STAR_RATING_LABELS[revHoverRating ?? revRating]}
+                            </span>
+                          </span>
+                        </div>
+
+                        <div className="bg-white border border-[#191A23] rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-1.5 sm:gap-2 shadow-[0_3px_0_0_#191A23]">
                           {[1, 2, 3, 4, 5].map((starVal) => {
-                            const active = (revHoverRating ?? revRating) >= starVal;
+                            const currentRating = revHoverRating ?? revRating;
+                            const active = currentRating >= starVal;
                             return (
                               <button
                                 key={starVal}
@@ -1586,22 +1271,30 @@ export default function App() {
                                 onClick={() => setRevRating(starVal)}
                                 onMouseEnter={() => setRevHoverRating(starVal)}
                                 onMouseLeave={() => setRevHoverRating(null)}
-                                className={`w-11 h-11 rounded-xl border border-[#191A23] flex items-center justify-center transition-all cursor-pointer ${
+                                className={`flex-1 h-12 sm:h-13 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all duration-150 cursor-pointer ${
                                   active
-                                    ? 'bg-[#191A23] text-[#7DD3FC]'
-                                    : 'bg-white text-[#191A23]/30 hover:text-[#191A23]'
+                                    ? 'bg-[#FEF9C3] border-[#CA8A04] shadow-[0_2px_0_0_#CA8A04] -translate-y-0.5'
+                                    : 'bg-[#F8FAFC] border-[#191A23]/15 hover:border-[#CA8A04]/60 hover:bg-[#FEF9C3]/40'
                                 }`}
                                 aria-label={`Rate ${starVal} out of 5 stars`}
                               >
                                 <Star
-                                  className={`w-5 h-5 ${active ? 'fill-[#7DD3FC]' : ''}`}
+                                  className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-150 ${
+                                    active
+                                      ? 'fill-[#EAB308] text-[#CA8A04] scale-110'
+                                      : 'fill-transparent text-[#191A23]/25'
+                                  }`}
                                 />
+                                <span
+                                  className={`text-[10px] font-mono font-bold leading-none ${
+                                    active ? 'text-[#854D0E]' : 'text-[#191A23]/40'
+                                  }`}
+                                >
+                                  {starVal}
+                                </span>
                               </button>
                             );
                           })}
-                          <span className="ml-1.5 sm:ml-2 text-xs font-mono font-bold text-[#191A23] tabular-nums">
-                            {revRating} / 5 Stars
-                          </span>
                         </div>
                       </div>
 
@@ -1645,12 +1338,12 @@ export default function App() {
                         </label>
                         <select
                           value={revService}
-                          onChange={(e) => setRevService(e.target.value as ServiceType)}
+                          onChange={(e) => setRevService(e.target.value)}
                           className="w-full px-3.5 py-2.5 min-h-[46px] text-base sm:text-sm bg-white border border-[#191A23] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7DD3FC]"
                         >
-                          {VALIDATION_RULES.SERVICE_TYPES.map((st) => (
-                            <option key={st} value={st}>
-                              {st}
+                          {displayServices.map((st) => (
+                            <option key={st.id} value={st.name}>
+                              {st.name}
                             </option>
                           ))}
                         </select>
@@ -1691,7 +1384,7 @@ export default function App() {
 
                   {/* Right 7 Columns: Filter Bar + Live Customer Reviews Feed */}
                   <div className="lg:col-span-7 space-y-5">
-                    {/* Interactive Rating Filter Buttons */}
+                    {/* Interactive Rating Filter Buttons (Mustard Yellow Stars) */}
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
                         {(['all', 5, 4, 3] as const).map((flt) => (
@@ -1699,13 +1392,20 @@ export default function App() {
                             key={String(flt)}
                             type="button"
                             onClick={() => setReviewFilterRating(flt)}
-                            className={`px-3.5 py-2 min-h-[40px] text-xs font-bold rounded-xl border border-[#191A23] transition-colors cursor-pointer ${
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] text-xs font-bold rounded-xl border border-[#191A23] transition-colors cursor-pointer ${
                               reviewFilterRating === flt
-                                ? 'bg-[#191A23] text-[#7DD3FC]'
-                                : 'bg-white text-[#191A23] hover:bg-[#7DD3FC]'
+                                ? 'bg-[#191A23] text-white'
+                                : 'bg-white text-[#191A23] hover:bg-[#FEF9C3]'
                             }`}
                           >
-                            {flt === 'all' ? `All Reviews (${allReviews.length})` : `${flt} ★`}
+                            {flt === 'all' ? (
+                              <span>All Reviews ({allReviews.length})</span>
+                            ) : (
+                              <>
+                                <span>{flt}</span>
+                                <Star className="w-3.5 h-3.5 fill-[#EAB308] text-[#EAB308]" />
+                              </>
+                            )}
                           </button>
                         ))}
                       </div>
@@ -1717,9 +1417,10 @@ export default function App() {
                         const isDarkCard = idx % 3 === 1;
                         const canDelete =
                           user &&
-                          rev.authorId !== 'guest' &&
-                          rev.authorId === user.uid &&
-                          !rev.id.startsWith('featured-');
+                          (isAdmin ||
+                            (rev.authorId !== 'guest' &&
+                              rev.authorId === user.uid &&
+                              !rev.id.startsWith('featured-')));
 
                         return (
                           <motion.div
@@ -1777,7 +1478,7 @@ export default function App() {
                                       key={s}
                                       className={`w-4 h-4 ${
                                         s <= rev.rating
-                                          ? 'fill-[#7DD3FC] text-[#7DD3FC]'
+                                          ? 'fill-[#EAB308] text-[#EAB308]'
                                           : isDarkCard
                                           ? 'text-white/25'
                                           : 'text-[#191A23]/20'
@@ -2218,6 +1919,15 @@ export default function App() {
               >
                 Contact Us
               </a>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={openAdminDashboard}
+                  className="py-1 text-[#7DD3FC] font-mono font-bold hover:underline underline-offset-4 cursor-pointer"
+                >
+                  Admin Page
+                </button>
+              )}
             </div>
           </div>
 
