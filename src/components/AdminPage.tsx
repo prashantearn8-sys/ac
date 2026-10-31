@@ -230,7 +230,7 @@ export function AdminPage({
 
         {/* Access Gate if not signed in as coolbrosacservice@gmail.com */}
         {!isAdmin ? (
-          <div className="bg-white border-2 border-[#191A23] rounded-3xl p-6 sm:p-10 max-w-xl mx-auto text-center space-y-5 shadow-[0_6px_0_0_#191A23]">
+          <div className="bg-white border-2 border-[#191A23] rounded-3xl p-6 sm:p-10 max-w-xl mx-auto text-center space-y-5">
             <div className="w-14 h-14 rounded-2xl bg-[#7DD3FC] border border-[#191A23] flex items-center justify-center mx-auto text-[#191A23]">
               <Lock className="w-7 h-7" />
             </div>
@@ -269,7 +269,7 @@ export function AdminPage({
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* LEFT 5 COLS: Add New Service Card */}
-            <div className="lg:col-span-5 bg-white border-2 border-[#191A23] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_6px_0_0_#191A23]">
+            <div className="lg:col-span-5 bg-white border-2 border-[#191A23] rounded-3xl p-6 sm:p-8 space-y-6">
               <div className="space-y-1">
                 <span className="inline-block text-[11px] font-mono font-bold uppercase tracking-wider text-[#0284C7]">
                   CREATE NEW PACKAGE
@@ -332,7 +332,7 @@ export function AdminPage({
                           onClick={() => setNewIconIndex(idx)}
                           className={`p-2 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                             selected
-                              ? 'bg-[#E0F2FE] border-2 border-[#0284C7] shadow-xs'
+                              ? 'bg-[#E0F2FE] border-2 border-[#0284C7]'
                               : 'bg-[#F8FAFC] border-[#191A23]/20 hover:border-[#191A23]'
                           }`}
                         >
@@ -362,7 +362,7 @@ export function AdminPage({
             </div>
 
             {/* RIGHT 7 COLS: Manage Existing Services & Change Pricing */}
-            <div className="lg:col-span-7 bg-white border-2 border-[#191A23] rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_6px_0_0_#191A23]">
+            <div className="lg:col-span-7 bg-white border-2 border-[#191A23] rounded-3xl p-6 sm:p-8 space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <span className="inline-block text-[11px] font-mono font-bold uppercase tracking-wider text-[#0284C7]">

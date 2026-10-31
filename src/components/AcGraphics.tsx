@@ -941,96 +941,9 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
   );
 };
 
-/**
- * HVAC Condenser Fan & Frost Emblem for the Emergency Callout Banner
- */
-export const DispatchDeskIllustration: React.FC = () => (
-  <svg
-    viewBox="0 0 320 320"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-full max-w-[260px] mx-auto select-none"
-  >
-    {/* Outer Dashed Thermal Ring */}
-    <circle
-      cx="160"
-      cy="160"
-      r="128"
-      stroke="#191A23"
-      strokeWidth="2"
-      strokeDasharray="6 6"
-    />
-    {/* Solid Housing Circle */}
-    <circle
-      cx="160"
-      cy="160"
-      r="96"
-      fill="#191A23"
-    />
-    {/* Rotating 4-Blade AC Condenser Turbine */}
-    <motion.g
-      animate={{ rotate: 360 }}
-      transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-      style={{ transformOrigin: '160px 160px' }}
-    >
-      <path
-        d="M160 160C142 122 146 82 170 82C190 82 184 126 160 160Z"
-        fill="#7DD3FC"
-      />
-      <path
-        d="M160 160C198 142 238 146 238 170C238 190 194 184 160 160Z"
-        fill="#7DD3FC"
-      />
-      <path
-        d="M160 160C178 198 174 238 150 238C130 238 136 194 160 160Z"
-        fill="#7DD3FC"
-      />
-      <path
-        d="M160 160C122 178 82 174 82 150C82 130 126 136 160 160Z"
-        fill="#7DD3FC"
-      />
-    </motion.g>
-    {/* Center Hub */}
-    <circle
-      cx="160"
-      cy="160"
-      r="22"
-      fill="#FFFFFF"
-      stroke="#191A23"
-      strokeWidth="3"
-    />
-    <circle cx="160" cy="160" r="8" fill="#191A23" />
-
-    {/* Floating 60-Min Dispatch Badge */}
-    <g transform="translate(184, 224)">
-      <rect
-        x="0"
-        y="0"
-        width="108"
-        height="34"
-        rx="10"
-        fill="#7DD3FC"
-        stroke="#191A23"
-        strokeWidth="2"
-      />
-      <text
-        x="54"
-        y="21"
-        textAnchor="middle"
-        fill="#191A23"
-        fontSize="11"
-        fontWeight="800"
-        fontFamily="monospace"
-      >
-        60m DISPATCH
-      </text>
-    </g>
-  </svg>
-);
-
 export type AcBrandName =
   | 'DAIKIN'
-  | 'MITSUBISHI'
+  | 'LG'
   | 'VOLTAS'
   | 'BLUE STAR'
   | 'CARRIER'
@@ -1069,46 +982,44 @@ export const AcBrandLogo: React.FC<{ brand: AcBrandName }> = ({ brand }) => {
         </svg>
       );
 
-    case 'MITSUBISHI':
+    case 'LG':
       return (
         <svg
-          viewBox="0 0 210 48"
+          viewBox="0 0 140 48"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="h-9 sm:h-11 w-auto select-none"
-          aria-label="Mitsubishi Electric"
+          aria-label="LG Air Conditioners"
         >
-          {/* Iconic Mitsubishi Three-Diamond Red Emblem (#E60012) */}
-          <g fill="#E60012">
-            {/* Top Diamond */}
-            <polygon points="24,5 31,17 24,29 17,17" />
-            {/* Bottom-Left Diamond */}
-            <polygon points="24,29 17,41 3,41 10,29" />
-            {/* Bottom-Right Diamond */}
-            <polygon points="24,29 38,29 45,41 31,41" />
-          </g>
-          {/* MITSUBISHI ELECTRIC Stacked Wordmark */}
+          {/* Official LG Heritage Red Circle (#A50034) */}
+          <circle cx="24" cy="24" r="18.5" fill="#A50034" />
+          {/* Stylized White 'G' Outer Arc */}
+          <path
+            d="M24 10.5C16.544 10.5 10.5 16.544 10.5 24C10.5 31.456 16.544 37.5 24 37.5C31.1 37.5 36.92 32.02 37.46 25.05H28.2"
+            stroke="#FFFFFF"
+            strokeWidth="2.6"
+            strokeLinecap="butt"
+          />
+          {/* Stylized White 'L' Center Nose */}
+          <path
+            d="M24 15.2V26.8H27.6"
+            stroke="#FFFFFF"
+            strokeWidth="2.6"
+            strokeLinecap="butt"
+          />
+          {/* White Eye Dot */}
+          <circle cx="18.2" cy="18.5" r="2" fill="#FFFFFF" />
+          {/* Bold LG Wordmark */}
           <text
-            x="53"
-            y="25"
-            fill="#191A23"
+            x="50"
+            y="34"
+            fill="#A50034"
             fontFamily="var(--font-display), sans-serif"
-            fontSize="19"
+            fontSize="30"
             fontWeight="800"
-            letterSpacing="0.8"
+            letterSpacing="1"
           >
-            MITSUBISHI
-          </text>
-          <text
-            x="54"
-            y="39"
-            fill="#E60012"
-            fontFamily="var(--font-display), sans-serif"
-            fontSize="11"
-            fontWeight="700"
-            letterSpacing="2.4"
-          >
-            ELECTRIC
+            LG
           </text>
         </svg>
       );
@@ -1116,49 +1027,37 @@ export const AcBrandLogo: React.FC<{ brand: AcBrandName }> = ({ brand }) => {
     case 'VOLTAS':
       return (
         <svg
-          viewBox="0 0 185 48"
+          viewBox="0 0 175 48"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="h-9 sm:h-11 w-auto select-none"
-          aria-label="Voltas Air Conditioners"
+          aria-label="Voltas A Tata Enterprise"
         >
-          {/* Voltas Cooling Emblem Badge */}
-          <rect x="4" y="9" width="30" height="30" rx="7" fill="#005BAC" />
-          <path
-            d="M11 16L19 32L27 16"
-            stroke="#FFFFFF"
-            strokeWidth="3.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M14 14C17 11 21 11 24 14"
-            stroke="#00AEEF"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          {/* VOLTAS Wordmark + TATA Subtitle */}
+          {/* Authentic Voltas Bold Wordmark (#005BAC) */}
           <text
-            x="42"
+            x="8"
             y="29"
             fill="#005BAC"
             fontFamily="var(--font-display), sans-serif"
-            fontSize="24"
-            fontWeight="800"
-            letterSpacing="1.8"
+            fontSize="28"
+            fontWeight="900"
+            letterSpacing="2.2"
           >
             VOLTAS
           </text>
+          {/* Thin Blue Rule + "A TATA Enterprise" Subtitle */}
+          <line x1="8" y1="33.5" x2="148" y2="33.5" stroke="#00AEEF" strokeWidth="1.4" />
           <text
-            x="43"
-            y="40"
-            fill="#008FD5"
+            x="78"
+            y="43.5"
+            textAnchor="middle"
+            fill="#005BAC"
             fontFamily="var(--font-sans), sans-serif"
             fontSize="8.5"
             fontWeight="700"
-            letterSpacing="1.4"
+            letterSpacing="1.1"
           >
-            A TATA PRODUCT
+            A TATA Enterprise
           </text>
         </svg>
       );
@@ -1166,34 +1065,34 @@ export const AcBrandLogo: React.FC<{ brand: AcBrandName }> = ({ brand }) => {
     case 'BLUE STAR':
       return (
         <svg
-          viewBox="0 0 205 48"
+          viewBox="0 0 215 48"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="h-9 sm:h-11 w-auto select-none"
           aria-label="Blue Star Air Conditioners"
         >
-          {/* Blue Star 4-Pointed Star & Swoosh Emblem */}
-          <circle cx="22" cy="24" r="15" fill="#E0F2FE" />
-          <path
-            d="M22 6L26.2 19.8L40 24L26.2 28.2L22 42L17.8 28.2L4 24L17.8 19.8L22 6Z"
-            fill="#0054A6"
-          />
-          <path
-            d="M22 11L24.5 21.5L35 24L24.5 26.5L22 37L19.5 26.5L9 24L19.5 21.5L22 11Z"
-            fill="#00AEEF"
-          />
-          {/* BLUE STAR Wordmark */}
+          {/* Authentic BLUE STAR Bold Wordmark on Left */}
           <text
-            x="46"
-            y="32"
+            x="6"
+            y="31"
             fill="#0054A6"
             fontFamily="var(--font-display), sans-serif"
             fontSize="22"
             fontWeight="800"
-            letterSpacing="1.2"
+            letterSpacing="1"
           >
             BLUE STAR
           </text>
+          {/* Authentic Blue Star Right-Side Wedge & Asymmetric 4-Point Star */}
+          <polygon points="154,36 204,10 204,36" fill="#0072BC" />
+          <path
+            d="M188 9L190.2 21.5L206 23.5L190.2 25.5L188 38L185.8 25.5L146 23.5L185.8 21.5L188 9Z"
+            fill="#00AEEF"
+          />
+          <path
+            d="M188 13L189.4 22.3L201 23.5L189.4 24.7L188 34L186.6 24.7L158 23.5L186.6 22.3L188 13Z"
+            fill="#FFFFFF"
+          />
         </svg>
       );
 
@@ -1240,43 +1139,41 @@ export const AcBrandLogo: React.FC<{ brand: AcBrandName }> = ({ brand }) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="h-9 sm:h-11 w-auto select-none"
-          aria-label="Hitachi Cooling & Heating"
+          aria-label="Hitachi Inspire the Next"
         >
-          {/* Hitachi Target Crest + Red Inspire Slash */}
-          <circle cx="19" cy="24" r="12" stroke="#E60027" strokeWidth="2.6" />
-          <circle cx="19" cy="24" r="4" fill="#E60027" />
-          <path
-            d="M19 8V40M7 24H31M10.5 15.5L27.5 32.5M27.5 15.5L10.5 32.5"
-            stroke="#E60027"
-            strokeWidth="1.8"
-          />
-          {/* HITACHI Corporate Wordmark */}
+          {/* Authentic HITACHI Wide-Tracked Corporate Wordmark in Hitachi Red (#E60027) */}
           <text
-            x="39"
-            y="29"
-            fill="#191A23"
+            x="8"
+            y="26"
+            fill="#E60027"
             fontFamily="var(--font-display), sans-serif"
-            fontSize="22"
-            fontWeight="800"
-            letterSpacing="2.5"
+            fontSize="24"
+            fontWeight="900"
+            letterSpacing="3.8"
           >
             HITACHI
           </text>
-          {/* Red "Inspire the Next" Accent Bar */}
-          <rect x="40" y="34" width="44" height="3" rx="1.5" fill="#E60027" />
+          {/* Authentic "Inspire the Next" Tagline + Signature Red Slash Accent */}
           <text
-            x="90"
-            y="38"
-            fill="#E60027"
+            x="22"
+            y="41"
+            fill="#191A23"
             fontFamily="var(--font-sans), sans-serif"
-            fontSize="8.5"
+            fontSize="11"
             fontWeight="700"
             fontStyle="italic"
+            letterSpacing="0.4"
           >
-            Cooling &amp; Tech
+            Inspire the Next
           </text>
+          {/* Iconic Hitachi Red Forward Slash Accent Next to "Next" */}
+          <path
+            d="M118 33L125 28L122 36Z"
+            fill="#E60027"
+          />
         </svg>
       );
   }
 };
+
 
