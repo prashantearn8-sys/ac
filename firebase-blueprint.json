@@ -275,6 +275,73 @@
         "messageText",
         "createdAt"
       ]
+    },
+    "CustomerReview": {
+      "title": "CustomerReview",
+      "description": "Public customer review and star rating submitted by either a signed-in user or a guest customer.",
+      "type": "object",
+      "properties": {
+        "authorId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the reviewer, or 'guest' when submitted without sign-in.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Display name of the customer leaving the review.",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "isVerifiedUser": {
+          "type": "boolean",
+          "description": "True if submitted by a Google-authenticated user, false for guest submissions."
+        },
+        "rating": {
+          "type": "number",
+          "description": "Star rating from 1 to 5."
+        },
+        "serviceUsed": {
+          "type": "string",
+          "description": "AC service package reviewed.",
+          "enum": [
+            "Foam Power Jet Service",
+            "Anti-Rust Deep Chemical Wash",
+            "Gas Charging & Leak Fix",
+            "Diagnostic & PCB Repair",
+            "Installation / Uninstallation",
+            "Annual Maintenance Contract (AMC)"
+          ],
+          "maxLength": 60
+        },
+        "locality": {
+          "type": "string",
+          "description": "Customer locality or sector (e.g., Sector 62, Noida).",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "reviewText": {
+          "type": "string",
+          "description": "Customer feedback and experience description.",
+          "minLength": 5,
+          "maxLength": 600
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when review was submitted."
+        }
+      },
+      "required": [
+        "authorId",
+        "authorName",
+        "isVerifiedUser",
+        "rating",
+        "serviceUsed",
+        "locality",
+        "reviewText",
+        "createdAt"
+      ]
     }
   },
   "firestore": {
@@ -295,6 +362,12 @@
         "$ref": "#/entities/CustomerMessage"
       },
       "description": "Stores customer inquiry messages sent from the app and emailed to coolbrosacservice@gmail.com."
+    },
+    "/reviews/{reviewId}": {
+      "schema": {
+        "$ref": "#/entities/CustomerReview"
+      },
+      "description": "Stores public customer reviews and ratings submitted with or without sign-in."
     }
   }
 }

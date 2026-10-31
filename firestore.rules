@@ -219,6 +219,37 @@ service cloud.firestore {
       data.createdAt is timestamp;
     }
 
+    function isValidReview(data) {
+      return data.keys().hasAll([
+        'authorId',
+        'authorName',
+        'isVerifiedUser',
+        'rating',
+        'serviceUsed',
+        'locality',
+        'reviewText',
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'authorId',
+        'authorName',
+        'isVerifiedUser',
+        'rating',
+        'serviceUsed',
+        'locality',
+        'reviewText',
+        'createdAt'
+      ]) &&
+      data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 &&
+      data.authorName is string && data.authorName.size() >= 2 && data.authorName.size() <= 80 &&
+      data.isVerifiedUser is bool &&
+      data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+      isValidServiceType(data.serviceUsed) &&
+      data.locality is string && data.locality.size() >= 2 && data.locality.size() <= 80 &&
+      data.reviewText is string && data.reviewText.size() >= 5 && data.reviewText.size() <= 600 &&
+      data.createdAt is timestamp;
+    }
+
     // 4. Collection Rules: /bookings/{bookingId}
     match /bookings/{bookingId} {
       allow get: if isSignedIn() && isValidId(bookingId) && existing().userId == request.auth.uid;
@@ -240,9 +271,7 @@ service cloud.firestore {
         incoming().updatedAt == request.time &&
         existing().status != 'completed' &&
         existing().status != 'cancelled' && (
-          // Action 1: Reschedule or update notes
           incoming().diff(existing()).affectedKeys().hasOnly(['scheduledDate', 'timeSlot', 'notes', 'updatedAt']) ||
-          // Action 2: Update status (e.g., mark completed or cancelled)
           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
         );
 
@@ -269,9 +298,7 @@ service cloud.firestore {
         incoming().userId == existing().userId &&
         incoming().createdAt == existing().createdAt &&
         incoming().updatedAt == request.time && (
-          // Action 1: Log new service completion and update due date / health status
           incoming().diff(existing()).affectedKeys().hasOnly(['lastServicedDate', 'nextDueDate', 'intervalMonths', 'healthStatus', 'updatedAt']) ||
-          // Action 2: Edit unit details
           incoming().diff(existing()).affectedKeys().hasOnly(['unitLabel', 'acType', 'brandModel', 'intervalMonths', 'nextDueDate', 'healthStatus', 'updatedAt'])
         );
 
@@ -293,6 +320,24 @@ service cloud.firestore {
       allow delete: if isVerifiedUser() &&
         isValidId(messageId) &&
         existing().userId == request.auth.uid;
+    }
+
+    // 7. Collection Rules: /reviews/{reviewId} (Supports both Signed-In and Guest Reviews)
+    match /reviews/{reviewId} {
+      allow get: if isValidId(reviewId);
+      allow list: if true;
+
+      allow create: if isValidId(reviewId) &&
+        isValidReview(incoming()) &&
+        incoming().createdAt == request.time && (
+          (isSignedIn() && incoming().authorId == request.auth.uid && incoming().isVerifiedUser == (request.auth.token.email_verified == true)) ||
+          (!isSignedIn() && incoming().authorId == 'guest' && incoming().isVerifiedUser == false)
+        );
+
+      allow delete: if isVerifiedUser() &&
+        isValidId(reviewId) &&
+        existing().authorId != 'guest' &&
+        existing().authorId == request.auth.uid;
     }
   }
 }

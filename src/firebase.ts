@@ -480,3 +480,72 @@ export async function createCustomerMessageInFirestore(
     handleFirestoreError(error, OperationType.CREATE, path);
   }
 }
+
+export interface CustomerReviewRecord {
+  id: string;
+  authorId: string;
+  authorName: string;
+  isVerifiedUser: boolean;
+  rating: number;
+  serviceUsed: ServiceType;
+  locality: string;
+  reviewText: string;
+  createdAt?: Timestamp | null;
+}
+
+export interface CreateReviewInput {
+  authorName: string;
+  rating: number;
+  serviceUsed: ServiceType;
+  locality: string;
+  reviewText: string;
+}
+
+export async function createReviewInFirestore(input: CreateReviewInput): Promise<string> {
+  const user = auth.currentUser;
+  const reviewId = generateSafeDocId('rev');
+  const path = `reviews/${reviewId}`;
+
+  const cleanName = input.authorName.trim().slice(0, 80);
+  const cleanLocality = (input.locality.trim() || 'Delhi NCR').slice(0, 80);
+  const cleanText = input.reviewText.trim().slice(0, 600);
+  const safeRating = Math.max(1, Math.min(5, Math.round(input.rating)));
+
+  if (cleanName.length < 2) {
+    throw new Error('Please enter your name (minimum 2 characters).');
+  }
+  if (cleanLocality.length < 2) {
+    throw new Error('Please enter your locality or city (minimum 2 characters).');
+  }
+  if (cleanText.length < 5) {
+    throw new Error('Please write at least 5 characters in your review.');
+  }
+
+  const payload = {
+    authorId: user ? user.uid : 'guest',
+    authorName: cleanName,
+    isVerifiedUser: Boolean(user && user.emailVerified),
+    rating: safeRating,
+    serviceUsed: input.serviceUsed,
+    locality: cleanLocality,
+    reviewText: cleanText,
+    createdAt: serverTimestamp(),
+  };
+
+  try {
+    await setDoc(doc(db, 'reviews', reviewId), payload);
+    return reviewId;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
+}
+
+export async function deleteReviewInFirestore(reviewId: string): Promise<void> {
+  const path = `reviews/${reviewId}`;
+  try {
+    await deleteDoc(doc(db, 'reviews', reviewId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
