@@ -133,7 +133,7 @@ const INITIAL_FEATURED_REVIEWS: CustomerReviewRecord[] = [
     isVerifiedUser: true,
     rating: 5,
     serviceUsed: 'Foam Power Jet Service',
-    locality: 'Dwarka Sector 10, South West Delhi',
+    locality: 'Dwarka Sector 10, Delhi',
     reviewText:
       'The technician used a 360-degree waterproof jacket and a 140 PSI hydro-jet gun. Not a single drop of water spilled on our bedroom wall, and the AC cooling dropped from 22°C to 11°C in 20 minutes.',
   },
@@ -155,7 +155,7 @@ const INITIAL_FEATURED_REVIEWS: CustomerReviewRecord[] = [
     isVerifiedUser: false,
     rating: 5,
     serviceUsed: 'Anti-Rust Deep Chemical Wash',
-    locality: 'Vasant Kunj, South West Delhi',
+    locality: 'Vasant Kunj, Delhi',
     reviewText:
       'Booked via WhatsApp and the engineer arrived within 50 minutes. The anti-rust coil coating and outdoor condenser wash made our 4-year-old Daikin inverter silent again.',
   },
@@ -358,7 +358,7 @@ export default function App() {
         authorName: reviewerName,
         rating: revRating,
         serviceUsed: revService,
-        locality: revLocality.trim() || 'South West Delhi / Gurugram',
+        locality: revLocality.trim() || 'Delhi / Gurugram',
         reviewText: revText.trim(),
       });
 
@@ -536,7 +536,7 @@ export default function App() {
             }}
             className="inline-flex items-center gap-2.5 text-xl sm:text-2xl font-display font-bold tracking-tight text-[#191A23] whitespace-nowrap shrink-0"
           >
-            <CoolBrosLogo className="w-7 h-7 text-[#191A23]" />
+            <CoolBrosLogo className="w-9 h-9 text-[#191A23]" />
             <span>Cool Bros AC</span>
           </a>
 
@@ -593,7 +593,7 @@ export default function App() {
                   onClick={() => setProfileMenuOpen((prev) => !prev)}
                   aria-expanded={profileMenuOpen}
                   aria-haspopup="true"
-                  className="group inline-flex items-center gap-2.5 pl-2 pr-4 py-1.5 text-xs font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl shadow-[0_3px_0_0_#191A23] hover:bg-[#7DD3FC] active:translate-y-0.5 transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer"
+                  className="group inline-flex items-center gap-2.5 pl-2 pr-4 py-1.5 text-xs font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] active:translate-y-0.5 transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   {user.photoURL && !avatarImgError ? (
                     <img
@@ -619,7 +619,7 @@ export default function App() {
                       className="fixed inset-0 z-40"
                       onClick={() => setProfileMenuOpen(false)}
                     />
-                    <div className="absolute right-0 top-full mt-2.5 w-64 bg-white border border-[#191A23] rounded-2xl shadow-[0_5px_0_0_#191A23] p-3.5 z-50 space-y-3">
+                    <div className="absolute right-0 top-full mt-2.5 w-64 bg-white border border-[#191A23] rounded-2xl p-3.5 z-50 space-y-3">
                       <div className="flex items-center gap-3 px-2 py-1.5 border-b border-[#191A23]/15">
                         {user.photoURL && !avatarImgError ? (
                           <img
@@ -663,7 +663,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="group inline-flex items-center gap-2.5 px-5 py-2.5 text-xs sm:text-sm font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] shadow-[0_3px_0_0_#191A23] active:translate-y-0.5 transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer"
+                className="group inline-flex items-center gap-2.5 px-5 py-2.5 text-xs sm:text-sm font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] active:translate-y-0.5 transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <svg
                   className="w-4 h-4 shrink-0"
@@ -753,7 +753,7 @@ export default function App() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="py-2.5 px-3 font-bold bg-[#7DD3FC] text-[#191A23] border border-[#191A23] shadow-[0_3px_0_0_#191A23] rounded-xl text-center whitespace-nowrap"
+                className="py-2.5 px-3 font-bold bg-[#7DD3FC] text-[#191A23] border border-[#191A23] rounded-xl text-center whitespace-nowrap"
               >
                 WhatsApp us
               </a>
@@ -803,23 +803,21 @@ export default function App() {
                   className="font-display font-bold text-[#191A23] tracking-tight text-balance"
                   style={{ fontSize: 'clamp(2.5rem, 4.6vw, 4.25rem)', lineHeight: 1.08 }}
                 >
-                  Navigating the summer heat for peak cooling
+                  Expert AC Service & Repair at Your Doorstep
                 </h1>
 
-                <p className="text-base sm:text-lg text-[#191A23]/80 leading-relaxed max-w-[62ch]">
-                  Dedicated doorstep HVAC engineering across{' '}
+                <p className="text-base sm:text-lg text-[#191A23]/80 leading-relaxed max-w-[54ch]">
+                  Fast, reliable foam jet cleaning, gas charging, and inverter PCB repair across{' '}
                   <strong className="font-semibold text-[#191A23]">
-                    South West Delhi & Gurugram
+                    Delhi & Gurugram
                   </strong>
-                  . We restore factory cooling and cut electricity draw through 140 PSI
-                  alkaline foam jet cleaning, precision gas charging, and inverter PCB
-                  diagnostics.
+                  .
                 </p>
 
                 <div className="pt-2 flex flex-wrap items-center gap-4">
                   <a
                     href="#send-message"
-                    className="inline-flex items-center justify-center gap-2.5 px-7 py-4 text-sm font-semibold text-white bg-[#191A23] border border-[#191A23] rounded-2xl hover:bg-[#191A23]/90 shadow-[0_4px_0_0_#7DD3FC] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0"
+                    className="inline-flex items-center justify-center gap-2.5 px-7 py-4 text-sm font-semibold text-white bg-[#191A23] border border-[#191A23] rounded-2xl hover:bg-[#191A23]/90 active:translate-y-0.5 transition-all whitespace-nowrap shrink-0"
                   >
                     <span>Book a consultation</span>
                   </a>
@@ -830,7 +828,7 @@ export default function App() {
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-4 text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl shadow-[0_4px_0_0_#191A23] hover:bg-[#38BDF8] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-4 text-sm font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-2xl hover:bg-[#4ADE80] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>WhatsApp us</span>
@@ -918,7 +916,7 @@ export default function App() {
                       ease: [0.16, 1, 0.3, 1],
                     }}
                     whileHover={{ y: -4 }}
-                    className={`${theme.cardBg} border border-[#191A23] rounded-[38px] p-7 sm:p-10 shadow-[0_6px_0_0_#191A23] flex flex-col justify-between gap-6 transition-transform`}
+                    className={`${theme.cardBg} border border-[#191A23] rounded-[38px] p-7 sm:p-10 flex flex-col justify-between gap-6 transition-transform`}
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                       {/* Left Column of Card: Highlighted Title Spans + Price + Action */}
@@ -990,19 +988,19 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="mt-16 bg-[#F3F3F3] border border-[#191A23] rounded-[38px] p-8 sm:p-12 shadow-[0_6px_0_0_#191A23] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+              className="mt-16 bg-[#F3F3F3] border border-[#191A23] rounded-[38px] p-8 sm:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
             >
               <div className="lg:col-span-7 space-y-4">
                 <div className="inline-flex items-center gap-2 bg-[#7DD3FC] border border-[#191A23] px-3 py-1 rounded-lg text-xs font-mono font-bold text-[#191A23]">
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>EXCLUSIVE COVERAGE: SOUTH WEST DELHI & GURUGRAM</span>
+                  <span>EXCLUSIVE COVERAGE: DELHI & GURUGRAM</span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-display font-bold text-[#191A23]">
-                  Emergency AC breakdown or poor cooling in SW Delhi or Gurugram?
+                  Emergency AC breakdown or poor cooling in Delhi or Gurugram?
                 </h3>
                 <p className="text-sm sm:text-base text-[#191A23]/80 max-w-xl leading-relaxed">
                   Contact our local dispatch desk right now for a 60-minute doorstep
-                  inspection across Dwarka, Vasant Kunj, Janakpuri, Palam, DLF Phases 1–5,
+                  inspection across Dwarka, Vasant Kunj, Janakpuri, South Delhi, DLF Phases 1–5,
                   Sohna Road, Golf Course Road, and all Gurugram sectors.
                 </p>
                 <div className="pt-2 flex flex-wrap items-center gap-3.5">
@@ -1012,7 +1010,7 @@ export default function App() {
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl shadow-[0_4px_0_0_#191A23] hover:bg-[#38BDF8] transition-all whitespace-nowrap"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl hover:bg-[#38BDF8] transition-all whitespace-nowrap"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>WhatsApp +91 9560415262</span>
@@ -1058,7 +1056,7 @@ export default function App() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.35, delay: index * 0.04 }}
-                    className={`border border-[#191A23] rounded-[34px] shadow-[0_6px_0_0_#191A23] transition-colors duration-200 ${
+                    className={`border border-[#191A23] rounded-[34px] transition-colors duration-200 ${
                       isOpen ? 'bg-[#7DD3FC]' : 'bg-[#F3F3F3]'
                     }`}
                   >
@@ -1127,7 +1125,7 @@ export default function App() {
               </div>
 
               {/* Aggregate Rating Summary */}
-              <div className="bg-[#191A23] text-white border border-[#191A23] rounded-2xl px-5 py-3.5 shadow-[0_4px_0_0_#7DD3FC] flex items-center gap-4 self-start md:self-auto shrink-0">
+              <div className="bg-[#191A23] text-white border border-[#191A23] rounded-2xl px-5 py-3.5 flex items-center gap-4 self-start md:self-auto shrink-0">
                 <div>
                   <p className="text-2xl font-mono font-bold text-[#7DD3FC] tabular-nums leading-none">
                     {averageRating} / 5.0
@@ -1146,7 +1144,7 @@ export default function App() {
 
             <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
               {/* Left 5 Columns: Write a Review Form (Works both with Sign-In or as Guest) */}
-              <div className="lg:col-span-5 bg-[#F3F3F3] border border-[#191A23] rounded-[36px] shadow-[0_6px_0_0_#191A23] p-6 sm:p-8 space-y-5">
+              <div className="lg:col-span-5 bg-[#F3F3F3] border border-[#191A23] rounded-[36px] p-6 sm:p-8 space-y-5">
                 <div className="flex items-center justify-between gap-2 pb-4 border-b border-[#191A23]/15">
                   <div>
                     <h3 className="text-xl font-display font-bold text-[#191A23]">
@@ -1162,7 +1160,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={handleGoogleSignIn}
-                      className="px-3 py-1.5 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl shadow-[0_2px_0_0_#191A23] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                      className="px-3 py-1.5 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0"
                     >
                       Or Sign In
                     </button>
@@ -1199,7 +1197,7 @@ export default function App() {
                             onMouseLeave={() => setRevHoverRating(null)}
                             className={`w-11 h-11 rounded-xl border border-[#191A23] flex items-center justify-center transition-all cursor-pointer ${
                               active
-                                ? 'bg-[#191A23] text-[#7DD3FC] shadow-[0_3px_0_0_#7DD3FC]'
+                                ? 'bg-[#191A23] text-[#7DD3FC]'
                                 : 'bg-white text-[#191A23]/30 hover:text-[#191A23]'
                             }`}
                             aria-label={`Rate ${starVal} out of 5 stars`}
@@ -1235,7 +1233,7 @@ export default function App() {
 
                     <div>
                       <label className="block text-xs font-bold text-[#191A23] mb-1">
-                        Locality (SW Delhi / Gurugram) *
+                        Locality (Delhi / Gurugram) *
                       </label>
                       <input
                         type="text"
@@ -1286,7 +1284,7 @@ export default function App() {
                   <button
                     type="submit"
                     disabled={revSubmitting}
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl shadow-[0_4px_0_0_#191A23] hover:bg-[#38BDF8] active:translate-y-0.5 transition-all cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl hover:bg-[#38BDF8] active:translate-y-0.5 transition-all cursor-pointer"
                   >
                     <span>
                       {revSubmitting
@@ -1312,7 +1310,7 @@ export default function App() {
                         onClick={() => setReviewFilterRating(flt)}
                         className={`px-3.5 py-1.5 text-xs font-bold rounded-xl border border-[#191A23] transition-colors cursor-pointer ${
                           reviewFilterRating === flt
-                            ? 'bg-[#191A23] text-[#7DD3FC] shadow-[0_2px_0_0_#7DD3FC]'
+                            ? 'bg-[#191A23] text-[#7DD3FC]'
                             : 'bg-white text-[#191A23] hover:bg-[#7DD3FC]'
                         }`}
                       >
@@ -1338,7 +1336,7 @@ export default function App() {
                         initial={{ opacity: 0, y: 14 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className={`p-6 sm:p-7 rounded-[30px] border border-[#191A23] shadow-[0_5px_0_0_#191A23] space-y-4 ${
+                        className={`p-6 sm:p-7 rounded-[30px] border border-[#191A23] space-y-4 ${
                           isDarkCard
                             ? 'bg-[#191A23] text-white'
                             : 'bg-white text-[#191A23]'
@@ -1440,7 +1438,7 @@ export default function App() {
               </p>
             </div>
 
-            <div className="mt-12 bg-[#F3F3F3] border border-[#191A23] rounded-[40px] shadow-[0_6px_0_0_#191A23] p-6 sm:p-10 lg:p-14 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            <div className="mt-12 bg-[#F3F3F3] border border-[#191A23] rounded-[40px] p-6 sm:p-10 lg:p-14 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
               {/* Left 7 Columns: Direct Message Form */}
               <div className="lg:col-span-7 space-y-6">
                 {/* Quick-Fill WhatsApp Templates */}
@@ -1458,7 +1456,7 @@ export default function App() {
                           'Split AC (1 Unit)'
                         )
                       }
-                      className="px-3.5 py-2 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl shadow-[0_2px_0_0_#191A23] transition-colors cursor-pointer whitespace-nowrap"
+                      className="px-3.5 py-2 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer whitespace-nowrap"
                     >
                       Foam Jet Service (₹599)
                     </button>
@@ -1471,7 +1469,7 @@ export default function App() {
                           'Split AC (1.5 Ton)'
                         )
                       }
-                      className="px-3.5 py-2 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl shadow-[0_2px_0_0_#191A23] transition-colors cursor-pointer whitespace-nowrap"
+                      className="px-3.5 py-2 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer whitespace-nowrap"
                     >
                       Not Cooling / Gas Check
                     </button>
@@ -1484,7 +1482,7 @@ export default function App() {
                           'Split AC (1 Unit)'
                         )
                       }
-                      className="px-3.5 py-2 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl shadow-[0_2px_0_0_#191A23] transition-colors cursor-pointer whitespace-nowrap"
+                      className="px-3.5 py-2 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer whitespace-nowrap"
                     >
                       AC Install / Uninstall
                     </button>
@@ -1497,7 +1495,7 @@ export default function App() {
                           'Multiple AC Units (3+)'
                         )
                       }
-                      className="px-3.5 py-2 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl shadow-[0_2px_0_0_#191A23] transition-colors cursor-pointer whitespace-nowrap"
+                      className="px-3.5 py-2 text-xs font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer whitespace-nowrap"
                     >
                       Multi-Unit / AMC Quote
                     </button>
@@ -1603,7 +1601,7 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-[#191A23] mb-1.5">
-                        Your Locality (South West Delhi / Gurugram)
+                        Your Locality (Delhi / Gurugram)
                       </label>
                       <input
                         type="text"
@@ -1652,7 +1650,7 @@ export default function App() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={handleWhatsAppDirectClick}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl shadow-[0_4px_0_0_#191A23] hover:bg-[#38BDF8] active:translate-y-0.5 transition-all whitespace-nowrap"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl hover:bg-[#38BDF8] active:translate-y-0.5 transition-all whitespace-nowrap"
                     >
                       <MessageCircle className="w-4 h-4 shrink-0" />
                       <span>Send on WhatsApp (+91 9560415262)</span>
@@ -1674,7 +1672,7 @@ export default function App() {
 
               {/* Right 5 Columns: Direct Engineer Helpline Cards */}
               <div className="lg:col-span-5 space-y-4">
-                <div className="bg-white border border-[#191A23] rounded-[30px] p-6 sm:p-7 shadow-[0_5px_0_0_#191A23] space-y-4">
+                <div className="bg-white border border-[#191A23] rounded-[30px] p-6 sm:p-7 space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="bg-[#7DD3FC] px-2.5 py-0.5 rounded border border-[#191A23] text-xs font-mono font-bold text-[#191A23]">
                       DIRECT ENGINEER HELPLINE
@@ -1756,10 +1754,10 @@ export default function App() {
                   <div className="pt-3 border-t border-[#191A23]/15 space-y-2 text-xs text-[#191A23]/80">
                     <div className="flex items-center gap-2 font-semibold text-[#191A23]">
                       <MapPin className="w-4 h-4 text-[#191A23] shrink-0" />
-                      <span>Dedicated Coverage: South West Delhi & Gurugram</span>
+                      <span>Dedicated Coverage: Delhi & Gurugram</span>
                     </div>
                     <p className="text-[11px] font-mono text-[#191A23]/70 leading-relaxed">
-                      SW Delhi: Dwarka, Vasant Kunj, Janakpuri, Palam, Najafgarh, Mahipalpur ·
+                      Delhi: Dwarka, Vasant Kunj, Janakpuri, South Delhi, Rohini, Connaught Place ·
                       Gurugram: DLF Phases 1–5, Cyber City, Sohna Rd, Golf Course Rd & All Sectors
                     </p>
                   </div>
@@ -1784,7 +1782,7 @@ export default function App() {
               }}
               className="inline-flex items-center gap-2.5 text-xl font-display font-bold text-white"
             >
-              <CoolBrosLogo className="w-6 h-6 text-[#7DD3FC]" />
+              <CoolBrosLogo className="w-8 h-8 text-[#7DD3FC]" />
               <span>Cool Bros AC Service</span>
             </a>
 
@@ -1853,7 +1851,7 @@ export default function App() {
               <p className="text-white/85">
                 Service Areas:{' '}
                 <span className="font-semibold text-[#7DD3FC]">
-                  South West Delhi & Gurugram
+                  Delhi & Gurugram
                 </span>
               </p>
               <p className="text-white/70">
@@ -1935,7 +1933,7 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              className="bg-white border-2 border-[#191A23] rounded-[34px] shadow-[0_8px_0_0_#191A23] max-w-lg w-full p-6 sm:p-8 space-y-6"
+              className="bg-white border-2 border-[#191A23] rounded-[34px] max-w-lg w-full p-6 sm:p-8 space-y-6"
             >
               <div className="flex items-start justify-between gap-4 border-b border-[#191A23]/15 pb-4">
                 <div>
@@ -2002,7 +2000,7 @@ export default function App() {
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 text-xs font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-xl shadow-[0_3px_0_0_#191A23] hover:bg-[#38BDF8] transition-all whitespace-nowrap"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 text-xs font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-xl hover:bg-[#38BDF8] transition-all whitespace-nowrap"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Book on WhatsApp</span>

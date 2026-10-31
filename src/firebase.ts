@@ -214,7 +214,18 @@ export function addMonthsToDateString(dateStr: string, months: number): string {
 }
 
 export async function signInWithGoogle() {
-  return signInWithPopup(auth, googleProvider);
+  try {
+    return await signInWithPopup(auth, googleProvider);
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code || '';
+    if (code === 'auth/unauthorized-domain') {
+      const host = typeof window !== 'undefined' ? window.location.hostname : 'your Netlify domain';
+      throw new Error(
+        `To enable Google Sign-In on ${host}, add "${host}" in Firebase Console → Authentication → Settings → Authorized domains.`
+      );
+    }
+    throw err;
+  }
 }
 
 export async function signOutUser() {

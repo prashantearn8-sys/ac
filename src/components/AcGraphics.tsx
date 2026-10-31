@@ -2,48 +2,18 @@ import React from 'react';
 import { motion } from 'motion/react';
 
 /**
- * Brand Logo: Cool Bros AC Snowflake & Cooling Turbine Emblem
- * Matches the app theme (#7DD3FC light blue + #191A23 obsidian) and HVAC category.
+ * Brand Logo: Cool Bros AC — Glossy PNG App Icon & Emblem (/logo.png)
+ * Matches the app theme (#7DD3FC light blue, #191A23 obsidian, #FFFFFF white) and HVAC category.
  */
 export const CoolBrosLogo: React.FC<{ className?: string }> = ({
-  className = 'w-7 h-7',
+  className = 'w-9 h-9',
 }) => (
-  <svg
-    viewBox="0 0 40 40"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    aria-hidden="true"
-  >
-    {/* Outer Rounded Octagonal HVAC Badge */}
-    <rect
-      x="2"
-      y="2"
-      width="36"
-      height="36"
-      rx="10"
-      fill="#7DD3FC"
-      stroke="#191A23"
-      strokeWidth="2.5"
-    />
-    {/* 6-Axis Precision Snowflake / Cooling Crystal */}
-    <g stroke="#191A23" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-      {/* Vertical Axis + Chevrons */}
-      <line x1="20" y1="7" x2="20" y2="33" />
-      <path d="M16.5 10.5L20 13.5L23.5 10.5" />
-      <path d="M16.5 29.5L20 26.5L23.5 29.5" />
-      {/* Diagonal Axis 1 */}
-      <line x1="9" y1="13.5" x2="31" y2="26.5" />
-      <path d="M10.5 18L13.8 16.3L12.8 12.6" />
-      <path d="M29.5 22L26.2 23.7L27.2 27.4" />
-      {/* Diagonal Axis 2 */}
-      <line x1="31" y1="13.5" x2="9" y2="26.5" />
-      <path d="M27.2 12.6L26.2 16.3L29.5 18" />
-      <path d="M12.8 27.4L13.8 23.7L10.5 22" />
-    </g>
-    {/* Central Turbine Hub */}
-    <circle cx="20" cy="20" r="4" fill="#FFFFFF" stroke="#191A23" strokeWidth="2.2" />
-  </svg>
+  <img
+    src="/logo.png"
+    alt="Cool Bros AC Logo"
+    referrerPolicy="no-referrer"
+    className={`${className} object-contain select-none shrink-0`}
+  />
 );
 
 /**
@@ -86,8 +56,6 @@ export const HeroCoolingIllustration: React.FC = () => {
           animate={{ y: [0, 5, 0] }}
           transition={{ duration: 4.4, repeat: Infinity, ease: 'easeInOut' }}
         >
-          {/* Hard Neo-Brutalist Shadow */}
-          <rect x="52" y="256" width="166" height="122" rx="16" fill="#191A23" />
           {/* Condenser Chassis */}
           <rect
             x="46"
@@ -186,8 +154,6 @@ export const HeroCoolingIllustration: React.FC = () => {
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
         >
-          {/* Neo-Brutalist Hard Offset Shadow */}
-          <rect x="116" y="88" width="316" height="110" rx="22" fill="#191A23" />
           {/* Main Indoor AC Body */}
           <rect
             x="110"
@@ -343,12 +309,6 @@ export const HeroCoolingIllustration: React.FC = () => {
           />
           {/* Digital Pressure Gauge Mounted on Jet Gun */}
           <circle
-            cx="396"
-            cy="352"
-            r="38"
-            fill="#191A23"
-          />
-          <circle
             cx="392"
             cy="348"
             r="38"
@@ -384,7 +344,6 @@ export const HeroCoolingIllustration: React.FC = () => {
           animate={{ y: [0, -8, 0] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <circle cx="66" cy="118" r="34" fill="#191A23" />
           <circle
             cx="62"
             cy="114"
@@ -457,7 +416,6 @@ export const HeroCoolingIllustration: React.FC = () => {
 
         {/* Bottom Telemetry Pill Tag */}
         <g transform="translate(154, 412)">
-          <rect x="4" y="4" width="212" height="40" rx="12" fill="#191A23" />
           <rect
             x="0"
             y="0"
@@ -503,7 +461,6 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
     return (
       <svg viewBox="0 0 210 160" fill="none" className="w-36 sm:w-44 h-28 sm:h-36 shrink-0">
         {/* Split AC Indoor Unit */}
-        <rect x="20" y="22" width="144" height="52" rx="10" fill="#191A23" />
         <rect
           x="16"
           y="18"
@@ -588,7 +545,6 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
     return (
       <svg viewBox="0 0 210 160" fill="none" className="w-36 sm:w-44 h-28 sm:h-36 shrink-0">
         {/* Evaporator / Condenser Fin Coil Block */}
-        <rect x="28" y="26" width="118" height="96" rx="10" fill="#191A23" />
         <rect
           x="24"
           y="22"
@@ -615,10 +571,6 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           strokeLinecap="round"
         />
         {/* Anti-Rust Polymeric Shield Badge (Right Side) */}
-        <path
-          d="M154 44L192 58V88C192 114 175 132 154 140C133 132 116 114 116 88V58L154 44Z"
-          fill="#191A23"
-        />
         <path
           d="M150 40L188 54V84C188 110 171 128 150 136C129 128 112 110 112 84V54L150 40Z"
           fill="#FFFFFF"
@@ -740,8 +692,6 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
     // Card 4 (#F3F3F3 bg): Annual Maintenance Contract (AMC) — 365-Day Service Calendar & AC Fan
     return (
       <svg viewBox="0 0 210 160" fill="none" className="w-36 sm:w-44 h-28 sm:h-36 shrink-0">
-        {/* Neo-Brutalist Hard Shadow */}
-        <rect x="28" y="30" width="128" height="106" rx="12" fill="#191A23" />
         {/* Main AMC Schedule Board */}
         <rect
           x="24"
@@ -796,7 +746,6 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           </g>
         ))}
         {/* Overlapping 365-Day AMC Fan Badge */}
-        <circle cx="162" cy="108" r="32" fill="#191A23" />
         <circle
           cx="158"
           cy="104"
@@ -837,7 +786,6 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
     return (
       <svg viewBox="0 0 210 160" fill="none" className="w-36 sm:w-44 h-28 sm:h-36 shrink-0">
         {/* PCB Board Base */}
-        <rect x="24" y="28" width="132" height="104" rx="10" fill="#191A23" />
         <rect
           x="20"
           y="24"
@@ -881,14 +829,6 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         <path d="M34 110H56L66 98" stroke="#191A23" strokeWidth="1.75" />
         <circle cx="34" cy="110" r="3.5" fill="#7DD3FC" stroke="#191A23" strokeWidth="1.5" />
         {/* Capacitor Cylinder & Multimeter Probe (Right Side) */}
-        <rect
-          x="140"
-          y="46"
-          width="48"
-          height="88"
-          rx="10"
-          fill="#191A23"
-        />
         <rect
           x="136"
           y="42"
@@ -1064,7 +1004,6 @@ export const DispatchDeskIllustration: React.FC = () => (
 
     {/* Floating 60-Min Dispatch Badge */}
     <g transform="translate(184, 224)">
-      <rect x="3" y="3" width="108" height="34" rx="10" fill="#191A23" />
       <rect
         x="0"
         y="0"

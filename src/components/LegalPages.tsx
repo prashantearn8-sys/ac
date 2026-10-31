@@ -51,8 +51,8 @@ export const LEGAL_PAGES_DATA: Record<LegalPageSlug, LegalPageData> = {
         title: 'Scope of HVAC Services & Technician Visits',
         summaryTag: 'Doorstep Inspection & Repair Protocol',
         paragraphs: [
-          'Cool Bros AC Service provides doorstep air conditioning maintenance, 140 PSI foam hydro-jet cleaning, refrigerant gas charging (R32, R410A, R22), inverter PCB repair, and split/window AC installation exclusively across residential and commercial premises in South West Delhi and Gurugram.',
-          'All bookings requested via WhatsApp (+91 9560415262), telephone, or our website dispatch desk are scheduled within our standard operating window of 08:00 AM to 09:00 PM, 7 days a week across South West Delhi and Gurugram.',
+          'Cool Bros AC Service provides doorstep air conditioning maintenance, 140 PSI foam hydro-jet cleaning, refrigerant gas charging (R32, R410A, R22), inverter PCB repair, and split/window AC installation exclusively across residential and commercial premises in Delhi and Gurugram.',
+          'All bookings requested via WhatsApp (+91 9560415262), telephone, or our website dispatch desk are scheduled within our standard operating window of 08:00 AM to 09:00 PM, 7 days a week across Delhi and Gurugram.',
         ],
         bullets: [
           'Customers must provide safe access to both the indoor evaporator unit (IDU) and outdoor condenser unit (ODU), along with functional water and electrical supply points.',
@@ -313,7 +313,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
           <button
             type="button"
             onClick={onBackHome}
-            className="self-start inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl shadow-[0_3px_0_0_#191A23] active:translate-y-0.5 transition-all cursor-pointer"
+            className="self-start inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-[#191A23] bg-white hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl active:translate-y-0.5 transition-all cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Home</span>
@@ -329,7 +329,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
                   onClick={() => onSelectSlug(tab.slug)}
                   className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl border border-[#191A23] transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#7DD3FC] text-[#191A23] shadow-[0_3px_0_0_#191A23]'
+                      ? 'bg-[#7DD3FC] text-[#191A23]'
                       : 'bg-[#F3F3F3] text-[#191A23]/80 hover:bg-white hover:text-[#191A23]'
                   }`}
                 >
@@ -347,7 +347,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="bg-[#191A23] text-white border border-[#191A23] rounded-[38px] p-7 sm:p-12 shadow-[0_6px_0_0_#7DD3FC] space-y-8"
+          className="bg-[#191A23] text-white border border-[#191A23] rounded-[38px] p-7 sm:p-12 space-y-8"
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <span className="inline-flex items-center gap-2 bg-[#7DD3FC] text-[#191A23] px-3 py-1 rounded-lg border border-[#191A23] text-xs font-mono font-bold">
@@ -396,7 +396,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: idx * 0.05 }}
-                className={`border border-[#191A23] rounded-[34px] p-6 sm:p-10 shadow-[0_6px_0_0_#191A23] space-y-5 ${
+                className={`border border-[#191A23] rounded-[34px] p-6 sm:p-10 space-y-5 ${
                   isBlueCard ? 'bg-[#7DD3FC]/25' : 'bg-[#F3F3F3]'
                 }`}
               >
@@ -441,7 +441,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
         </div>
 
         {/* Bottom Support & Escalation Desk Card */}
-        <div className="bg-white border border-[#191A23] rounded-[34px] p-7 sm:p-10 shadow-[0_6px_0_0_#191A23] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="bg-white border border-[#191A23] rounded-[34px] p-7 sm:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="inline-block bg-[#7DD3FC] border border-[#191A23] px-2.5 py-0.5 rounded text-xs font-mono font-bold text-[#191A23]">
               QUESTIONS ABOUT OUR {page.title.toUpperCase()}?
@@ -460,7 +460,7 @@ export const LegalPageView: React.FC<LegalPageViewProps> = ({
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl shadow-[0_4px_0_0_#191A23] hover:bg-[#38BDF8] transition-all whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl hover:bg-[#38BDF8] transition-all whitespace-nowrap"
             >
               <MessageCircle className="w-4 h-4" />
               <span>WhatsApp +91 9560415262</span>

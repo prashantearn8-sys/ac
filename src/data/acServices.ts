@@ -292,7 +292,7 @@ export const CASE_STUDY_PROOFS: CaseStudyProof[] = [
     id: 'proof-2',
     client: 'Dr. Meera Nair',
     roleAndOrg: 'Chief Administrator, Lotus Diagnostics & Imaging',
-    location: 'Dwarka Sector 12, South West Delhi',
+    location: 'Dwarka Sector 12, Delhi',
     headlineMetric: '100% Uptime Across 14 Months',
     secondaryMetric: 'Zero Moisture Leak or Compressor Faults',
     beforeState:
@@ -300,13 +300,13 @@ export const CASE_STUDY_PROOFS: CaseStudyProof[] = [
     intervention:
       'Enrolled 9 Daikin inverter units under the Cool Bros AMC with Anti-Rust polymeric coil shielding and quarterly nitrogen drain purges.',
     outcomeQuote:
-      'Having automated maintenance reminders and a 60-minute technician response guarantee across South West Delhi completely eliminated our summer equipment downtime.',
+      'Having automated maintenance reminders and a 60-minute technician response guarantee across Delhi & Gurugram completely eliminated our summer equipment downtime.',
   },
   {
     id: 'proof-3',
     client: 'Siddharth Malhotra',
     roleAndOrg: 'Residential Homeowner (4-BHK Penthouse)',
-    location: 'Vasant Kunj, South West Delhi',
+    location: 'Vasant Kunj, Delhi',
     headlineMetric: '+32% CFM Airflow Recovery',
     secondaryMetric: '4.9/5 Verified Post-Service Audit',
     beforeState:
