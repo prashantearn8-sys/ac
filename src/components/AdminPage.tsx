@@ -45,6 +45,8 @@ export interface DisplayServiceItem {
 interface AdminPageProps {
   user: User | null;
   services: DisplayServiceItem[];
+  featuredReviews?: CustomerReviewRecord[];
+  onDeleteFeaturedReview?: (reviewId: string) => void;
   onSignIn: () => Promise<void>;
   onBackToHome: () => void;
 }
@@ -61,6 +63,8 @@ const GRAPHIC_LABELS = [
 export function AdminPage({
   user,
   services,
+  featuredReviews = [],
+  onDeleteFeaturedReview,
   onSignIn,
   onBackToHome,
 }: AdminPageProps) {
@@ -304,7 +308,11 @@ export function AdminPage({
     setFeedback(null);
     setConfirmReviewDeleteId(null);
     try {
-      await deleteReviewInFirestore(reviewId);
+      if (reviewId.startsWith('featured-') && onDeleteFeaturedReview) {
+        onDeleteFeaturedReview(reviewId);
+      } else {
+        await deleteReviewInFirestore(reviewId);
+      }
       setFeedback({ type: 'success', text: 'Deleted customer review.' });
     } catch (err) {
       setFeedback({
@@ -328,7 +336,10 @@ export function AdminPage({
     }
   };
 
-  const pendingReviewsCount = allAdminReviews.filter((r) => !r.approved).length;
+  const combinedAdminReviews = [
+    ...allAdminReviews,
+    ...featuredReviews.filter((f) => !allAdminReviews.some((r) => r.id === f.id)),
+  ];
 
   return (
     <section className="py-10 sm:py-14 lg:py-20 bg-[#F8FAFC] min-h-[75vh]">
@@ -705,96 +716,93 @@ export function AdminPage({
               </div>
             </div>
 
-            {/* SECTION 2: CUSTOMER REVIEW MODERATION QUEUE */}
+            {/* SECTION 2: CUSTOMER REVIEWS MANAGEMENT (ADMIN DELETE POWER) */}
             <div className="bg-white border-2 border-[#191A23] rounded-3xl p-6 sm:p-8 space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#191A23]/15 pb-4">
                 <div>
                   <span className="inline-block text-xs font-mono font-bold uppercase tracking-wider text-[#0369A1]">
-                    SPAM PROTECTION & MODERATION
+                    ADMIN REVIEW CONTROLS
                   </span>
                   <h2 className="text-xl sm:text-2xl font-display font-bold text-[#191A23]">
-                    Customer Reviews Moderation ({allAdminReviews.length})
+                    Customer Reviews ({combinedAdminReviews.length})
                   </h2>
                   <p className="text-xs text-[#191A23]/75 mt-0.5">
-                    Guest and customer reviews require admin approval (`approved == true`) before
-                    appearing publicly on the website.
+                    Verified Google Users appear in white boxes; Guests appear in dark navy boxes. Admin can delete any review.
                   </p>
                 </div>
-
-                <span
-                  className={`px-3.5 py-1.5 rounded-xl border border-[#191A23] text-xs font-mono font-bold ${
-                    pendingReviewsCount > 0
-                      ? 'bg-[#FEF08A] text-[#191A23]'
-                      : 'bg-[#DCFCE7] text-[#14532D]'
-                  }`}
-                >
-                  {pendingReviewsCount} Pending Approval
-                </span>
               </div>
 
-              {allAdminReviews.length === 0 ? (
+              {combinedAdminReviews.length === 0 ? (
                 <p className="text-sm text-[#191A23]/70 py-4">
-                  No submitted reviews in Firestore yet.
+                  No customer reviews on the website right now.
                 </p>
               ) : (
                 <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
-                  {allAdminReviews.map((rev) => {
+                  {combinedAdminReviews.map((rev) => {
                     const isConfirmingDel = confirmReviewDeleteId === rev.id;
+                    const isGuest = !rev.isVerifiedUser;
                     return (
                       <div
                         key={rev.id}
-                        className={`p-4 rounded-2xl border border-[#191A23] flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                          rev.approved ? 'bg-[#F8FAFC]' : 'bg-[#FEF9C3]/60'
+                        className={`p-4 rounded-2xl border-2 border-[#191A23] flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                          isGuest ? 'bg-[#191A23] text-white' : 'bg-white text-[#191A23]'
                         }`}
                       >
                         <div className="space-y-1 flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-display font-bold text-sm text-[#191A23]">
+                            <span className="font-display font-bold text-sm">
                               {rev.authorName}
                             </span>
-                            <span className="text-xs font-mono text-[#191A23]/75">
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs font-mono font-bold border ${
+                                rev.isVerifiedUser
+                                  ? 'bg-[#7DD3FC] text-[#191A23] border-[#191A23]'
+                                  : 'bg-white/15 text-white border-white/30'
+                              }`}
+                            >
+                              {rev.isVerifiedUser ? 'Verified Google User' : 'Guest'}
+                            </span>
+                            <span
+                              className={`text-xs font-mono ${
+                                isGuest ? 'text-white/75' : 'text-[#191A23]/75'
+                              }`}
+                            >
                               ({rev.locality} · {rev.serviceUsed})
                             </span>
-                            <span className="inline-flex items-center gap-0.5 text-xs font-mono font-bold text-[#191A23]">
+                            <span className="inline-flex items-center gap-0.5 text-xs font-mono font-bold">
                               <Star className="w-3.5 h-3.5 fill-[#EAB308] text-[#EAB308]" />
                               {rev.rating}/5
                             </span>
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs font-mono font-bold border border-[#191A23] ${
-                                rev.approved
-                                  ? 'bg-[#86EFAC] text-[#191A23]'
-                                  : 'bg-[#FDE047] text-[#191A23]'
-                              }`}
-                            >
-                              {rev.approved ? 'Approved (Public)' : 'Pending Moderation'}
-                            </span>
                           </div>
-                          <p className="text-xs sm:text-sm text-[#191A23] leading-relaxed">
+                          <p
+                            className={`text-xs sm:text-sm leading-relaxed ${
+                              isGuest ? 'text-white/90' : 'text-[#191A23]'
+                            }`}
+                          >
                             &ldquo;{rev.reviewText}&rdquo;
                           </p>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleApproveReview(rev)}
-                            className={`px-3.5 py-2 min-h-[38px] rounded-xl border border-[#191A23] text-xs font-bold cursor-pointer ${
-                              rev.approved
-                                ? 'bg-white text-[#191A23] hover:bg-[#F3F3F3]'
-                                : 'bg-[#86EFAC] text-[#191A23] hover:bg-[#4ADE80]'
-                            }`}
-                          >
-                            {rev.approved ? 'Unpublish' : 'Approve & Publish'}
-                          </button>
+                          {!rev.id.startsWith('featured-') && !rev.approved && (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleApproveReview(rev)}
+                              className="px-3.5 py-2 min-h-[38px] rounded-xl border border-[#191A23] text-xs font-bold bg-[#86EFAC] text-[#191A23] hover:bg-[#4ADE80] cursor-pointer"
+                            >
+                              Approve &amp; Publish
+                            </button>
+                          )}
 
                           {!isConfirmingDel ? (
                             <button
                               type="button"
                               onClick={() => setConfirmReviewDeleteId(rev.id)}
-                              className="p-2 min-h-[38px] rounded-xl bg-white border border-[#191A23] text-[#B91C1C] hover:bg-[#FEE2E2] cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-xl bg-white border border-[#191A23] text-[#B91C1C] hover:bg-[#FEE2E2] text-xs font-bold cursor-pointer"
                               aria-label={`Delete review by ${rev.authorName}`}
                             >
                               <Trash2 className="w-4 h-4" aria-hidden="true" />
+                              <span>Delete</span>
                             </button>
                           ) : (
                             <div className="flex items-center gap-1.5">
@@ -808,7 +816,7 @@ export function AdminPage({
                               <button
                                 type="button"
                                 onClick={() => setConfirmReviewDeleteId(null)}
-                                className="px-2.5 py-1.5 rounded-lg bg-white border border-[#191A23] text-xs font-semibold cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-lg bg-white text-[#191A23] border border-[#191A23] text-xs font-semibold cursor-pointer"
                               >
                                 Cancel
                               </button>

@@ -67,15 +67,15 @@ export const LEGAL_PAGES_DATA: Record<LegalPageSlug, LegalPageData> = {
       },
       {
         number: '02',
-        title: 'Inspection Fee, Published Rate Card & Billing',
+        title: 'Diagnostic Visit & Transparent Billing',
         summaryTag: 'Pre-Work Approval & Zero Hidden Charges',
         paragraphs: [
-          'If you book a cleaning service or approve a repair estimate, the inspection and visiting fee is ₹0 (completely waived). If our technician performs an on-site fault diagnosis and you decide not to proceed with any service or repair, a flat ₹249 diagnostic visit fee applies.',
-          'Before starting any repair or component replacement beyond the booked base package, our technician conducts a digital clamp-meter and manifold gauge check and shares an itemized cost estimate from our published rate card on the website.',
+          'If you book a cleaning service or approve a repair estimate, the diagnostic visiting fee is ₹0 (completely waived). If our technician performs an on-site fault diagnosis and you decide not to proceed with any service or repair, a flat ₹249 diagnostic visit fee applies.',
+          'Before starting any repair or component replacement beyond the booked base package, our technician conducts a digital clamp-meter and manifold gauge check and shares an upfront itemized cost estimate.',
         ],
         bullets: [
           'Base service packages cover technician labor, hydro-jet cleaning, and standard wash consumables per AC unit, inclusive of taxes.',
-          'Spare parts (capacitors, contactor relays, sensors, copper piping at ₹380/ft, outdoor wall brackets at ₹750/set, or lab PCB repairs) are billed strictly according to the published Spare Parts Rate Card on our homepage and only after your approval.',
+          'Spare parts (capacitors, contactor relays, sensors, copper piping, outdoor wall brackets, or lab PCB repairs) are quoted transparently with genuine grade components and billed only after your approval.',
           'Payment is collected only after job completion and testing via UPI, cash, or bank transfer.',
         ],
       },

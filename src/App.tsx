@@ -46,8 +46,6 @@ import {
   COMPATIBLE_AC_BRANDS,
   CONTACT_PHONE_DISPLAY,
   CONTACT_PHONE_HREF,
-  FAQ_ITEMS,
-  INSPECTION_AND_PARTS_RATES,
   OPERATING_HOURS,
   OWNER_EMAIL,
   PROTOCOL_STEPS,
@@ -228,12 +226,20 @@ export default function App() {
     text: string;
   } | null>(null);
   const [confirmDeleteReviewId, setConfirmDeleteReviewId] = useState<string | null>(null);
+  const [deletedFeaturedReviewIds, setDeletedFeaturedReviewIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const saved = window.localStorage.getItem('coolbros_deleted_featured_reviews');
+      return saved ? (JSON.parse(saved) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Profile Popover & Interactive Accordion State
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [avatarImgError, setAvatarImgError] = useState(false);
   const [openStepIndex, setOpenStepIndex] = useState<number>(-1);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number>(0);
 
   // Direct Message Form State (WhatsApp + Background Dispatch)
   const [msgName, setMsgName] = useState('');
@@ -409,7 +415,10 @@ export default function App() {
     ? foamJetService.priceInr.toLocaleString('en-IN')
     : '599';
 
-  const allReviews = [...firestoreReviews, ...INITIAL_FEATURED_REVIEWS];
+  const activeFeaturedReviews = INITIAL_FEATURED_REVIEWS.filter(
+    (r) => !deletedFeaturedReviewIds.includes(r.id)
+  );
+  const allReviews = [...firestoreReviews, ...activeFeaturedReviews];
   const filteredReviews =
     reviewFilterRating === 'all'
       ? allReviews
@@ -484,7 +493,7 @@ export default function App() {
         type: 'success',
         text: result.approved
           ? 'Thank you! Your review has been published live.'
-          : 'Thank you! Your review has been submitted and will appear publicly once approved by our moderation team.',
+          : 'Thank you! Your review has been submitted.',
       });
       setRevText('');
       setRevRating(5);
@@ -510,12 +519,29 @@ export default function App() {
     }
   };
 
+  const handleDeleteFeaturedReview = (reviewId: string) => {
+    setDeletedFeaturedReviewIds((prev) => {
+      const next = prev.includes(reviewId) ? prev : [...prev, reviewId];
+      try {
+        window.localStorage.setItem('coolbros_deleted_featured_reviews', JSON.stringify(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
+
   const handleDeleteOwnReview = async (reviewId: string) => {
     setConfirmDeleteReviewId(null);
+    if (!isAdmin) return;
+    if (reviewId.startsWith('featured-')) {
+      handleDeleteFeaturedReview(reviewId);
+      return;
+    }
     try {
       await deleteReviewInFirestore(reviewId);
     } catch {
-      // Ignore if not owner
+      // Ignore if not authorized
     }
   };
 
@@ -601,7 +627,7 @@ export default function App() {
         </a>
 
         {/* FIXED COMPACT FULL-BLEED HEADER: Touches top, left, and right edges, slim height, never hides on scroll */}
-        <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#191A23]/15">
+        <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/92 backdrop-blur-md border-b-2 border-[#191A23]/15">
           <div className="w-full flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-4 lg:px-6 h-13 sm:h-15 phone-landscape-header">
             {/* Zone 1: Brand Snowflake Emblem + Wordmark */}
             <a
@@ -610,17 +636,21 @@ export default function App() {
                 e.preventDefault();
                 navigateHomeSection();
               }}
-              className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-base lg:text-lg font-display font-bold tracking-tight text-[#191A23] whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded-lg"
+              className="group inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-base lg:text-lg font-display font-bold tracking-tight text-[#0F172A] whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded-lg"
             >
-              <CoolBrosLogo className="w-7 h-7 sm:w-8 sm:h-8 text-[#191A23]" />
-              <span className="hidden sm:inline">Cool Bros AC Service</span>
-              <span className="sm:hidden">Cool Bros AC</span>
+              <CoolBrosLogo className="w-7 h-7 sm:w-8 sm:h-8 text-[#0F172A] transition-transform duration-500 ease-out group-hover:rotate-45 group-hover:scale-105" />
+              <span className="hidden sm:inline group-hover:text-[#0284C7] transition-colors">
+                Cool Bros AC Service
+              </span>
+              <span className="sm:hidden group-hover:text-[#0284C7] transition-colors">
+                Cool Bros AC
+              </span>
             </a>
 
             {/* Zone 2: Clean Single-Line Navigation Links (Desktop lg+) */}
             <nav
               aria-label="Primary Navigation"
-              className="hidden lg:flex items-center gap-5 xl:gap-7 text-xs xl:text-sm font-medium text-[#191A23]"
+              className="hidden lg:flex items-center gap-5 xl:gap-7 text-xs xl:text-sm font-semibold text-[#0F172A]"
             >
               <a
                 href="#services"
@@ -628,9 +658,9 @@ export default function App() {
                   e.preventDefault();
                   navigateHomeSection('services');
                 }}
-                className="py-1 hover:underline decoration-[#7DD3FC] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
+                className="py-1 hover:text-[#0284C7] hover:underline decoration-[#38BDF8] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
               >
-                Services &amp; Rates
+                Services
               </a>
               <a
                 href="#protocol"
@@ -638,27 +668,18 @@ export default function App() {
                   e.preventDefault();
                   navigateHomeSection('protocol');
                 }}
-                className="py-1 hover:underline decoration-[#7DD3FC] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
+                className="py-1 hover:text-[#0284C7] hover:underline decoration-[#38BDF8] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
               >
                 Working Process
               </a>
-              <a
-                href="#faq"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateHomeSection('faq');
-                }}
-                className="py-1 hover:underline decoration-[#7DD3FC] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
-              >
-                FAQ
-              </a>
+
               <a
                 href="#reviews"
                 onClick={(e) => {
                   e.preventDefault();
                   navigateHomeSection('reviews');
                 }}
-                className="py-1 hover:underline decoration-[#7DD3FC] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
+                className="py-1 hover:text-[#0284C7] hover:underline decoration-[#38BDF8] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
               >
                 Reviews
               </a>
@@ -668,7 +689,7 @@ export default function App() {
                   e.preventDefault();
                   navigateHomeSection('send-message');
                 }}
-                className="py-1 hover:underline decoration-[#7DD3FC] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
+                className="py-1 hover:text-[#0284C7] hover:underline decoration-[#38BDF8] decoration-2 underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded"
               >
                 Contact Us
               </a>
@@ -676,10 +697,10 @@ export default function App() {
                 <button
                   type="button"
                   onClick={openAdminDashboard}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border border-[#191A23] transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border border-[#191A23] transition-all cursor-pointer ${
                     activeAdminPage
-                      ? 'bg-[#191A23] text-[#7DD3FC]'
-                      : 'bg-[#7DD3FC] text-[#191A23] hover:bg-[#38BDF8]'
+                      ? 'bg-[#0F172A] text-[#7DD3FC]'
+                      : 'bg-[#7DD3FC] text-[#191A23] hover:bg-[#38BDF8] hover:-translate-y-0.5'
                   }`}
                 >
                   Admin Page
@@ -691,7 +712,7 @@ export default function App() {
             <div className="relative flex items-center gap-1.5 sm:gap-2 shrink-0">
               <a
                 href={CONTACT_PHONE_HREF}
-                className="inline-flex items-center justify-center p-2 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-bold text-white bg-[#191A23] border border-[#191A23] rounded-xl hover:bg-[#0369A1] transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                className="inline-flex items-center justify-center p-2 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-bold text-white bg-[#0F172A] border border-[#191A23] rounded-xl hover:bg-[#0284C7] hover:-translate-y-0.5 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                 title={`Call ${CONTACT_PHONE_DISPLAY}`}
                 aria-label={`Call ${CONTACT_PHONE_DISPLAY}`}
               >
@@ -704,7 +725,7 @@ export default function App() {
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center p-2 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-xl hover:bg-[#4ADE80] transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                className="inline-flex items-center justify-center p-2 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-xl hover:bg-[#4ADE80] hover:-translate-y-0.5 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                 title={`WhatsApp ${CONTACT_PHONE_DISPLAY}`}
                 aria-label={`WhatsApp ${CONTACT_PHONE_DISPLAY}`}
               >
@@ -726,7 +747,7 @@ export default function App() {
                     aria-haspopup="true"
                     title={user.displayName || user.email || 'Account'}
                     aria-label="User account menu"
-                    className="group inline-flex items-center justify-center p-1 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] transition-all duration-150 shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                    className="group inline-flex items-center justify-center p-1 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] hover:-translate-y-0.5 transition-all duration-150 shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                   >
                     {user.photoURL && !avatarImgError ? (
                       <img
@@ -737,7 +758,7 @@ export default function App() {
                         className="w-6 h-6 rounded-full object-cover border border-[#191A23] shrink-0"
                       />
                     ) : (
-                      <div className="w-6 h-6 rounded-full bg-[#191A23] text-[#7DD3FC] flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-[#0F172A] text-[#7DD3FC] flex items-center justify-center text-xs font-bold uppercase shrink-0">
                         {(user.displayName || user.email || 'U').charAt(0)}
                       </div>
                     )}
@@ -749,7 +770,7 @@ export default function App() {
                         className="fixed inset-0 z-40"
                         onClick={() => setProfileMenuOpen(false)}
                       />
-                      <div className="absolute right-0 top-full mt-2.5 w-64 bg-white border border-[#191A23] rounded-2xl p-3.5 z-50 space-y-2.5">
+                      <div className="absolute right-0 top-full mt-2.5 w-64 bg-white border-2 border-[#191A23] rounded-2xl p-3.5 z-50 space-y-2.5">
                         <div className="flex items-center gap-3 px-2 py-1.5 border-b border-[#191A23]/15">
                           {user.photoURL && !avatarImgError ? (
                             <img
@@ -760,7 +781,7 @@ export default function App() {
                               className="w-9 h-9 rounded-full object-cover border border-[#191A23] shrink-0"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-[#191A23] text-[#7DD3FC] flex items-center justify-center text-sm font-bold uppercase shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-[#0F172A] text-[#7DD3FC] flex items-center justify-center text-sm font-bold uppercase shrink-0">
                               {(user.displayName || user.email || 'U').charAt(0)}
                             </div>
                           )}
@@ -793,7 +814,7 @@ export default function App() {
                             setProfileMenuOpen(false);
                             signOutUser();
                           }}
-                          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 min-h-[42px] text-xs font-bold text-white bg-[#191A23] hover:bg-red-600 rounded-xl transition-colors cursor-pointer"
+                          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 min-h-[42px] text-xs font-bold text-white bg-[#0F172A] hover:bg-red-600 rounded-xl transition-colors cursor-pointer"
                         >
                           <LogOut className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                           <span>Sign Out</span>
@@ -807,7 +828,7 @@ export default function App() {
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={isSigningIn}
-                  className="group inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 min-h-[36px] sm:min-h-[38px] text-xs font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] disabled:opacity-60 transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                  className="group inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 min-h-[36px] sm:min-h-[38px] text-xs font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] hover:-translate-y-0.5 disabled:opacity-60 transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                 >
                   <svg
                     className="w-3.5 h-3.5 shrink-0"
@@ -868,6 +889,8 @@ export default function App() {
               <AdminPage
                 user={user}
                 services={displayServices}
+                featuredReviews={activeFeaturedReviews}
+                onDeleteFeaturedReview={handleDeleteFeaturedReview}
                 onSignIn={handleGoogleSignIn}
                 onBackToHome={() => navigateHomeSection()}
               />
@@ -884,7 +907,7 @@ export default function App() {
               <>
                 {/* DEDICATED LOCAL AREA LANDING BANNER WHEN AN AREA ROUTE IS ACTIVE */}
                 {activeArea && (
-                  <div className="bg-[#191A23] text-white border-b-2 border-[#191A23] py-6 sm:py-8">
+                  <div className="bg-[#0F172A] text-white border-b-2 border-[#191A23] py-6 sm:py-8">
                     <div className="w-full px-3 sm:px-4 lg:px-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       <div className="space-y-2 max-w-3xl">
                         <div className="flex flex-wrap items-center gap-2">
@@ -916,13 +939,13 @@ export default function App() {
                           )}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-5 py-3 rounded-xl bg-[#86EFAC] text-[#191A23] font-bold text-xs sm:text-sm border border-[#191A23]"
+                          className="px-5 py-3 rounded-xl bg-[#86EFAC] hover:bg-[#4ADE80] text-[#191A23] font-bold text-xs sm:text-sm border border-[#191A23] transition-all"
                         >
                           Book in {activeArea.shortName}
                         </a>
                         <a
                           href={CONTACT_PHONE_HREF}
-                          className="px-5 py-3 rounded-xl bg-white text-[#191A23] font-mono font-bold text-xs sm:text-sm"
+                          className="px-5 py-3 rounded-xl bg-white hover:bg-[#E0F2FE] text-[#191A23] font-mono font-bold text-xs sm:text-sm transition-colors"
                         >
                           Call {CONTACT_PHONE_DISPLAY}
                         </a>
@@ -932,18 +955,18 @@ export default function App() {
                 )}
 
                 {/* SPLIT HERO SECTION */}
-                <section className="pt-2 pb-10 sm:pt-3 sm:pb-12 lg:pt-3 lg:pb-14 phone-landscape-hero-section">
+                <section className="relative overflow-hidden pt-2 pb-10 sm:pt-3 sm:pb-12 lg:pt-3 lg:pb-14 bg-[radial-gradient(ellipse_80%_60%_at_72%_35%,rgba(125,211,252,0.26),rgba(224,242,254,0.1)_58%,transparent_100%)] phone-landscape-hero-section">
                   <div className="w-full px-3 sm:px-4 lg:px-6">
                     <div className="grid grid-cols-1 landscape:grid-cols-12 md:grid-cols-12 gap-5 sm:gap-8 lg:gap-10 items-center phone-landscape-hero-grid">
                       {/* Left Column (Mobile Landscape, Tablet & Desktop) / Bottom (Mobile Portrait): Editorial Headline, Copy, & Primary CTAs */}
                       <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 22 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         className="order-2 landscape:order-1 md:order-1 landscape:col-span-7 md:col-span-6 space-y-4 landscape:space-y-2 sm:space-y-6 text-left phone-landscape-hero-text"
                       >
                         <h1
-                          className="font-display font-bold text-[#191A23] tracking-tight text-balance text-2xl sm:text-4xl lg:text-5xl landscape:text-xl phone-landscape-hero-title"
+                          className="font-display font-bold text-[#0F172A] tracking-tight text-balance text-2xl sm:text-4xl lg:text-5xl landscape:text-xl phone-landscape-hero-title"
                           style={{ fontSize: 'clamp(1.35rem, 3.2vw, 3.8rem)', lineHeight: 1.1 }}
                         >
                           {activeArea
@@ -954,7 +977,7 @@ export default function App() {
                         <p className="text-sm sm:text-lg text-[#191A23]/85 leading-relaxed landscape:text-xs landscape:leading-snug max-w-[52ch] phone-landscape-hero-desc">
                           Fast, reliable 140 PSI foam jet cleaning, R32/R410A gas charging, and
                           inverter PCB repair across{' '}
-                          <strong className="font-semibold text-[#191A23]">
+                          <strong className="font-semibold text-[#0284C7]">
                             Delhi &amp; Gurugram
                           </strong>{' '}
                           ({OPERATING_HOURS}).
@@ -963,7 +986,7 @@ export default function App() {
                         <div className="pt-1 sm:pt-2 grid grid-cols-1 landscape:flex landscape:flex-row sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-4 phone-landscape-hero-cta-wrap">
                           <a
                             href="#send-message"
-                            className="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-4 min-h-[42px] sm:min-h-[50px] text-xs sm:text-sm font-semibold text-white bg-[#191A23] border border-[#191A23] rounded-2xl hover:bg-[#191A23]/90 active:translate-y-0.5 transition-all whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] phone-landscape-hero-btn"
+                            className="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-4 min-h-[42px] sm:min-h-[50px] text-xs sm:text-sm font-semibold text-white bg-[#0F172A] border-2 border-[#191A23] rounded-2xl hover:bg-[#0284C7] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] phone-landscape-hero-btn"
                           >
                             <span>Book AC Service</span>
                           </a>
@@ -974,7 +997,7 @@ export default function App() {
                             )}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 min-h-[42px] sm:min-h-[50px] text-xs sm:text-sm font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-2xl hover:bg-[#4ADE80] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] phone-landscape-hero-btn"
+                            className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 min-h-[42px] sm:min-h-[50px] text-xs sm:text-sm font-bold text-[#191A23] bg-[#86EFAC] border-2 border-[#191A23] rounded-2xl hover:bg-[#4ADE80] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] phone-landscape-hero-btn"
                           >
                             <MessageCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
                             <span>WhatsApp Us</span>
@@ -985,17 +1008,17 @@ export default function App() {
                         <div className="pt-0.5 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs sm:text-sm font-medium text-[#191A23]/85 phone-landscape-hero-trust">
                           <a
                             href={CONTACT_PHONE_HREF}
-                            className="inline-flex items-center gap-1.5 py-0.5 font-mono font-bold text-[#191A23] hover:underline"
+                            className="inline-flex items-center gap-1.5 py-0.5 font-mono font-bold text-[#0F172A] hover:text-[#0284C7] transition-colors"
                           >
-                            <Phone className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            <Phone className="w-3.5 h-3.5 text-[#0284C7] shrink-0" aria-hidden="true" />
                             <span>{CONTACT_PHONE_DISPLAY}</span>
                           </a>
                           <span aria-hidden="true">·</span>
                           <a
                             href={`mailto:${OWNER_EMAIL}`}
-                            className="inline-flex items-center gap-1.5 py-0.5 font-mono hover:underline break-all sm:break-normal"
+                            className="inline-flex items-center gap-1.5 py-0.5 font-mono hover:text-[#0284C7] transition-colors break-all sm:break-normal"
                           >
-                            <Mail className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            <Mail className="w-3.5 h-3.5 text-[#0284C7] shrink-0" aria-hidden="true" />
                             <span>{OWNER_EMAIL}</span>
                           </a>
                         </div>
@@ -1003,8 +1026,8 @@ export default function App() {
 
                       {/* Right Column (Mobile Landscape, Tablet & Desktop) / Top (Mobile Portrait): Animated HVAC Vector Art Illustration */}
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.94 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, scale: 0.94, y: 12 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                         className="order-1 landscape:order-2 md:order-2 landscape:col-span-5 md:col-span-6 flex justify-center landscape:justify-end md:justify-end items-center phone-landscape-hero-illustration"
                       >
@@ -1014,34 +1037,31 @@ export default function App() {
 
                     {/* MULTI-BRAND LOGOS SHOWCASE STRIP (B&W by default, colourful on hover) */}
                     <div className="mt-6 sm:mt-12 pt-4 sm:pt-6 border-t border-[#191A23]/15 space-y-3 phone-landscape-brands-strip">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                        <span className="text-[11px] sm:text-xs font-mono font-bold text-[#191A23] uppercase tracking-wider">
+                      <div>
+                        <span className="text-[11px] sm:text-xs font-mono font-bold text-[#0F172A] uppercase tracking-wider">
                           We service all major AC brands:
-                        </span>
-                        <span className="text-[10px] sm:text-[11px] font-mono text-[#191A23]/60">
-                          Hover logo to view brand colors
                         </span>
                       </div>
 
                       {/* Brand Logo Grid: Clean borderless logos, B&W by default, Colourful on cursor hover */}
                       <div className="grid grid-cols-4 md:grid-cols-8 gap-x-4 gap-y-3 sm:gap-x-6 sm:gap-y-4 items-center">
-                        {BRAND_LIST.map((brand) => (
-                          <div
+                        {BRAND_LIST.map((brand, idx) => (
+                          <motion.div
                             key={brand.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.3, delay: idx * 0.04 }}
                             className="group flex items-center justify-center py-1 transition-all duration-300 cursor-pointer"
                             title={`We service and repair ${brand.name} Air Conditioners`}
                             aria-label={`${brand.name} AC Service & Repair`}
                           >
-                            <div className="filter grayscale contrast-125 opacity-55 group-hover:grayscale-0 group-hover:contrast-100 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 ease-out flex items-center justify-center">
+                            <div className="filter grayscale contrast-125 opacity-55 group-hover:grayscale-0 group-hover:contrast-100 group-hover:opacity-100 group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300 ease-out flex items-center justify-center">
                               <BrandLogoSvg brandId={brand.id} className="h-5 sm:h-6 w-auto max-w-[105px] select-none" />
                             </div>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
-
-                      <p className="text-[10px] sm:text-xs text-[#191A23]/75">
-                        Independent multi-brand AC repair &amp; maintenance provider. We service all major brands; brand names and trademarks belong to their respective owners and are displayed strictly to indicate compatibility.
-                      </p>
                     </div>
                   </div>
                 </section>
@@ -1049,21 +1069,26 @@ export default function App() {
                 {/* SECTION 01: SERVICES & TRANSPARENT RATE CARD */}
                 <section
                   id="services"
-                  className="scroll-mt-16 py-12 sm:py-16 lg:py-24 bg-[#F8FAFC] border-y border-[#191A23]/10"
+                  className="scroll-mt-16 py-12 sm:py-16 lg:py-24 bg-gradient-to-b from-[#F0F9FF]/80 via-[#F8FAFC] to-[#F0F9FF]/60 border-y-2 border-[#191A23]/15"
                 >
                   <div className="w-full px-3 sm:px-4 lg:px-6 space-y-12">
                     {/* "Services" Heading */}
-                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <motion.div
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4 }}
+                      className="flex flex-col sm:flex-row sm:items-end justify-between gap-4"
+                    >
                       <div className="space-y-2.5">
-                        <span className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.2em] text-[#0369A1]">
-                          <span className="w-2 h-2 rounded-full bg-[#0369A1]" />
-                          <span>OUR AC SERVICES &amp; UPFRONT PRICING</span>
+                        <span className="inline-flex items-center text-xs font-mono font-bold uppercase tracking-[0.2em] text-[#0284C7]">
+                          OUR AC SERVICES &amp; UPFRONT PRICING
                         </span>
                         <div className="space-y-2">
-                          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-[#191A23]">
+                          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-[#0F172A]">
                             Services
                           </h2>
-                          <div className="h-1.5 w-20 rounded-full bg-[#0369A1]" />
+                          <div className="h-1.5 w-20 rounded-full bg-gradient-to-r from-[#0284C7] to-[#38BDF8]" />
                         </div>
                       </div>
 
@@ -1071,32 +1096,32 @@ export default function App() {
                         <button
                           type="button"
                           onClick={openAdminDashboard}
-                          className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#191A23] text-[#7DD3FC] text-xs font-mono font-bold hover:bg-[#0369A1] hover:text-white transition-colors cursor-pointer"
+                          className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0F172A] text-[#7DD3FC] border border-[#191A23] text-xs font-mono font-bold hover:bg-[#0284C7] hover:text-white transition-all cursor-pointer"
                         >
                           <ShieldCheck className="w-4 h-4" aria-hidden="true" />
                           <span>Edit Prices / Add Services</span>
                         </button>
                       )}
-                    </div>
+                    </motion.div>
 
                     {/* Service Cards Grid: Service Image + Name + Included Tagline + Clear Per-AC Price + Contact */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
                       {displayServices.map((item, idx) => (
                         <motion.article
                           key={item.id}
-                          initial={{ opacity: 0, y: 18 }}
+                          initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true, margin: '-30px' }}
                           transition={{
-                            duration: 0.35,
-                            delay: idx * 0.05,
+                            duration: 0.4,
+                            delay: idx * 0.06,
                             ease: [0.16, 1, 0.3, 1],
                           }}
-                          whileHover={{ y: -4 }}
-                          className="bg-white border-2 border-[#191A23] rounded-3xl overflow-hidden flex flex-col justify-between transition-all"
+                          whileHover={{ y: -6 }}
+                          className="group bg-white border-2 border-[#191A23] rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300"
                         >
                           {/* 1. Service Image */}
-                          <div className="bg-[#F8FAFC] border-b border-[#191A23]/15 p-6 flex items-center justify-center h-48">
+                          <div className="bg-gradient-to-br from-[#E0F2FE]/75 via-[#F8FAFC] to-[#BAE6FD]/45 group-hover:from-[#BAE6FD]/75 group-hover:via-[#E0F2FE]/65 group-hover:to-[#7DD3FC]/40 border-b-2 border-[#191A23]/15 p-6 flex items-center justify-center h-48 transition-colors duration-300">
                             <ServiceCardIllustration index={item.iconIndex} />
                           </div>
 
@@ -1104,11 +1129,11 @@ export default function App() {
                           <div className="p-6 flex flex-col justify-between flex-1 gap-4">
                             <div className="space-y-2.5">
                               <div className="flex items-start justify-between gap-3">
-                                <h3 className="font-display font-bold text-lg sm:text-xl text-[#191A23] leading-snug">
+                                <h3 className="font-display font-bold text-lg sm:text-xl text-[#0F172A] group-hover:text-[#0284C7] transition-colors leading-snug">
                                   {item.name}
                                 </h3>
                                 <div className="shrink-0 text-right">
-                                  <span className="inline-block px-3 py-1 rounded-xl bg-[#7DD3FC] border border-[#191A23] font-mono font-bold text-lg sm:text-xl text-[#191A23] tabular-nums">
+                                  <span className="inline-block px-3 py-1 rounded-xl bg-gradient-to-br from-[#7DD3FC] to-[#38BDF8] border-2 border-[#191A23] font-mono font-bold text-lg sm:text-xl text-[#0F172A] tabular-nums">
                                     ₹{item.priceInr.toLocaleString('en-IN')}
                                   </span>
                                   <span className="block text-xs font-mono font-semibold text-[#191A23]/80 mt-1">
@@ -1120,10 +1145,6 @@ export default function App() {
                               <p className="text-xs sm:text-sm text-[#191A23]/85 leading-relaxed">
                                 {item.tagline}
                               </p>
-
-                              <span className="inline-block text-xs font-mono font-semibold text-[#0369A1]">
-                                ✓ {item.warrantyLabel}
-                              </span>
                             </div>
 
                             {/* Contact Actions: WhatsApp + Icon-Only Call Button */}
@@ -1134,7 +1155,7 @@ export default function App() {
                                 )}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex-1 inline-flex items-center justify-center gap-2 px-3.5 py-3 min-h-[44px] text-xs sm:text-sm font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-xl hover:bg-[#4ADE80] transition-colors whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                                className="flex-1 inline-flex items-center justify-center gap-2 px-3.5 py-3 min-h-[44px] text-xs sm:text-sm font-bold text-[#0F172A] bg-[#86EFAC] border-2 border-[#191A23] rounded-xl hover:bg-[#4ADE80] hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                               >
                                 <svg
                                   className="w-4 h-4 fill-current shrink-0"
@@ -1150,7 +1171,7 @@ export default function App() {
                                 href={CONTACT_PHONE_HREF}
                                 title={`Call ${CONTACT_PHONE_DISPLAY}`}
                                 aria-label={`Call to book ${item.name}`}
-                                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] p-3 text-white bg-[#191A23] border border-[#191A23] rounded-xl hover:bg-[#0369A1] transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] p-3 text-white bg-[#0F172A] border-2 border-[#191A23] rounded-xl hover:bg-[#0284C7] hover:-translate-y-0.5 active:translate-y-0 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                               >
                                 <Phone className="w-4 h-4 text-[#7DD3FC] shrink-0" aria-hidden="true" />
                               </a>
@@ -1159,80 +1180,43 @@ export default function App() {
                         </motion.article>
                       ))}
                     </div>
-
-                    {/* PUBLISHED INSPECTION FEE & SPARE PARTS RATE CARD */}
-                    <div
-                      id="rates"
-                      className="scroll-mt-16 bg-white border-2 border-[#191A23] rounded-3xl p-5 sm:p-8 space-y-5"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#191A23]/15 pb-4">
-                        <div>
-                          <span className="text-xs font-mono font-bold text-[#0369A1] uppercase tracking-wider">
-                            NO HIDDEN CHARGES · PRE-APPROVED RATE CARD
-                          </span>
-                          <h3 className="text-xl sm:text-2xl font-display font-bold text-[#191A23] mt-1">
-                            Inspection Fee &amp; Standard Spare Parts Rate Card
-                          </h3>
-                        </div>
-                        <span className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-[#E0F2FE] border border-[#191A23] text-xs font-mono font-bold text-[#191A23]">
-                          ₹0 Visit Fee With Any Service
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                        {INSPECTION_AND_PARTS_RATES.map((rate) => (
-                          <div
-                            key={rate.item}
-                            className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#191A23]/25 flex flex-col justify-between gap-2.5"
-                          >
-                            <div className="space-y-1">
-                              <h4 className="font-display font-bold text-sm sm:text-base text-[#191A23]">
-                                {rate.item}
-                              </h4>
-                              <p className="text-xs text-[#191A23]/80 leading-relaxed">
-                                {rate.specification}
-                              </p>
-                            </div>
-                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#191A23]/10 text-xs font-mono">
-                              <span className="font-bold text-[#191A23] bg-[#7DD3FC] px-2.5 py-0.5 rounded border border-[#191A23]">
-                                {rate.priceDisplay}
-                              </span>
-                              <span className="text-[#191A23]/80 font-semibold">
-                                Warranty: {rate.warranty}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </section>
 
                 {/* SECTION 02: COMPACT "OUR WORKING PROCESS" */}
                 <section id="protocol" className="scroll-mt-16 py-10 sm:py-14">
                   <div className="w-full px-3 sm:px-4 lg:px-6">
-                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-5 sm:pb-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: 14 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.35 }}
+                      className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-5 sm:pb-6"
+                    >
                       <div className="space-y-1.5">
-                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-[#191A23]">
+                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-[#0F172A]">
                           Our Working Process
                         </h2>
-                        <div className="h-1 w-16 rounded-full bg-[#0369A1]" />
+                        <div className="h-1.5 w-16 rounded-full bg-gradient-to-r from-[#0284C7] to-[#38BDF8]" />
                       </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-start">
                       {PROTOCOL_STEPS.map((st, index) => {
                         const isOpen = openStepIndex === index;
                         const panelId = `protocol-panel-${st.step}`;
                         return (
                           <motion.div
                             key={st.step}
-                            initial={{ opacity: 0, y: 12 }}
+                            initial={{ opacity: 0, y: 14 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.25, delay: index * 0.03 }}
-                            className={`border-2 border-[#191A23] rounded-2xl overflow-hidden transition-colors duration-200 ${
-                              isOpen ? 'bg-[#E0F2FE]' : 'bg-white'
+                            transition={{ duration: 0.3, delay: index * 0.04 }}
+                            whileHover={{ y: -2 }}
+                            className={`border-2 border-[#191A23] rounded-2xl overflow-hidden transition-all duration-200 ${
+                              isOpen
+                                ? 'bg-gradient-to-r from-[#E0F2FE] via-[#F0F9FF] to-[#E0F2FE]'
+                                : 'bg-white hover:bg-[#F8FAFC]'
                             }`}
                           >
                             <button
@@ -1243,22 +1227,24 @@ export default function App() {
                               className="w-full px-4 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between gap-2.5 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                             >
                               <div className="flex items-center gap-3 min-w-0">
-                                <span className="px-2.5 py-1 rounded-lg bg-[#7DD3FC] border border-[#191A23] text-xs sm:text-sm font-mono font-bold text-[#191A23] tabular-nums shrink-0">
+                                <span className="px-2.5 py-1 rounded-lg bg-gradient-to-br from-[#7DD3FC] to-[#38BDF8] border border-[#191A23] text-xs sm:text-sm font-mono font-bold text-[#0F172A] tabular-nums shrink-0">
                                   {st.step}
                                 </span>
                                 <div className="min-w-0">
-                                  <h3 className="text-sm sm:text-base font-display font-bold text-[#191A23] leading-snug truncate">
+                                  <h3 className="text-sm sm:text-base font-display font-bold text-[#0F172A] leading-snug truncate">
                                     {st.title}
                                   </h3>
-                                  <span className="block text-xs font-mono text-[#0369A1] font-semibold">
+                                  <span className="block text-xs font-mono text-[#0284C7] font-semibold">
                                     {st.metric}
                                   </span>
                                 </div>
                               </div>
 
                               <span
-                                className={`w-8 h-8 rounded-lg border border-[#191A23] flex items-center justify-center shrink-0 transition-colors ${
-                                  isOpen ? 'bg-[#191A23] text-white' : 'bg-[#F8FAFC] text-[#191A23]'
+                                className={`w-8 h-8 rounded-lg border border-[#191A23] flex items-center justify-center shrink-0 transition-all duration-300 ${
+                                  isOpen
+                                    ? 'bg-[#0F172A] text-[#7DD3FC] rotate-180'
+                                    : 'bg-[#F8FAFC] text-[#191A23]'
                                 }`}
                               >
                                 {isOpen ? (
@@ -1276,7 +1262,7 @@ export default function App() {
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.2 }}
+                                  transition={{ duration: 0.22 }}
                                   className="overflow-hidden"
                                 >
                                   <div className="px-4 sm:px-5 pb-3.5 pt-2.5 border-t border-[#191A23]/15 bg-white text-xs sm:text-sm text-[#191A23] leading-relaxed">
@@ -1292,125 +1278,37 @@ export default function App() {
                   </div>
                 </section>
 
-                {/* SECTION 03: FREQUENTLY ASKED QUESTIONS (FAQ) & SERVICE AREAS */}
-                <section
-                  id="faq"
-                  className="scroll-mt-16 py-10 sm:py-14 bg-white border-t border-[#191A23]/10"
-                >
-                  <div className="w-full px-3 sm:px-4 lg:px-6 space-y-10">
-                    <div className="space-y-1.5">
-                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-[#191A23]">
-                        Frequently Asked Questions
-                      </h2>
-                      <div className="h-1 w-16 rounded-full bg-[#0369A1]" />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-start">
-                      {FAQ_ITEMS.map((faq, idx) => {
-                        const isOpen = openFaqIndex === idx;
-                        const faqPanelId = `faq-panel-${idx}`;
-                        return (
-                          <div
-                            key={faq.question}
-                            className={`border-2 border-[#191A23] rounded-2xl overflow-hidden ${
-                              isOpen ? 'bg-[#E0F2FE]' : 'bg-[#F8FAFC]'
-                            }`}
-                          >
-                            <button
-                              type="button"
-                              aria-expanded={isOpen}
-                              aria-controls={faqPanelId}
-                              onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
-                              className="w-full px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
-                            >
-                              <h3 className="text-sm sm:text-base font-display font-bold text-[#191A23] leading-snug">
-                                {faq.question}
-                              </h3>
-                              <span
-                                className={`w-8 h-8 rounded-lg border border-[#191A23] flex items-center justify-center shrink-0 ${
-                                  isOpen ? 'bg-[#191A23] text-white' : 'bg-white text-[#191A23]'
-                                }`}
-                              >
-                                {isOpen ? (
-                                  <Minus className="w-4 h-4" aria-hidden="true" />
-                                ) : (
-                                  <Plus className="w-4 h-4" aria-hidden="true" />
-                                )}
-                              </span>
-                            </button>
-                            {isOpen && (
-                              <div
-                                id={faqPanelId}
-                                className="px-4 sm:px-5 pb-4 pt-2.5 border-t border-[#191A23]/15 bg-white text-xs sm:text-sm text-[#191A23] leading-relaxed"
-                              >
-                                {faq.answer}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Dedicated Local Area Landing Links (SEO & Quick Dispatch) */}
-                    <div className="bg-[#F8FAFC] border-2 border-[#191A23] rounded-3xl p-5 sm:p-6 space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="text-sm sm:text-base font-display font-bold text-[#191A23]">
-                          Dedicated Doorstep AC Service Hubs Across Delhi &amp; Gurugram
-                        </h3>
-                        <span className="text-xs font-mono font-semibold text-[#0369A1]">
-                          45–60 Min Dispatch · {OPERATING_HOURS}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {AREA_LIST.map((area) => {
-                          const isCurrent = activeAreaSlug === area.slug;
-                          return (
-                            <a
-                              key={area.slug}
-                              href={`/${area.slug}`}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                openAreaPage(area.slug);
-                              }}
-                              className={`px-3.5 py-2 rounded-xl border border-[#191A23] text-xs font-bold transition-colors ${
-                                isCurrent
-                                  ? 'bg-[#191A23] text-[#7DD3FC]'
-                                  : 'bg-white text-[#191A23] hover:bg-[#7DD3FC]'
-                              }`}
-                            >
-                              {area.shortName} ({area.city})
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </section>
 
                 {/* SECTION 04: CUSTOMER REVIEWS & RATINGS */}
                 <section
                   id="reviews"
-                  className="scroll-mt-16 py-12 sm:py-16 lg:py-24 bg-[#F8FAFC] border-y border-[#191A23]/10"
+                  className="scroll-mt-16 py-12 sm:py-16 lg:py-24 bg-gradient-to-b from-[#F8FAFC] via-[#F0F9FF]/65 to-[#F8FAFC] border-y-2 border-[#191A23]/15"
                 >
                   <div className="w-full px-3 sm:px-4 lg:px-6">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 pb-8 sm:pb-10">
+                    <motion.div
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4 }}
+                      className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 pb-8 sm:pb-10"
+                    >
                       <div className="space-y-2.5">
                         <div className="space-y-2">
-                          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-[#191A23]">
+                          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-[#0F172A]">
                             Reviews &amp; Ratings
                           </h2>
-                          <div className="h-1.5 w-20 rounded-full bg-[#0369A1]" />
+                          <div className="h-1.5 w-20 rounded-full bg-gradient-to-r from-[#0284C7] to-[#38BDF8]" />
                         </div>
                       </div>
 
                       {/* Aggregate Rating Summary */}
-                      <div className="bg-[#191A23] text-white border-2 border-[#191A23] rounded-2xl px-5 py-3.5 flex items-center gap-4 self-start md:self-auto shrink-0">
+                      <div className="bg-[#0F172A] text-white border-2 border-[#191A23] rounded-2xl px-5 py-3.5 flex items-center gap-4 self-start md:self-auto shrink-0">
                         <div>
                           <p className="text-xl sm:text-2xl font-mono font-bold text-[#EAB308] tabular-nums leading-none">
                             {averageRating} / 5.0
                           </p>
                           <p className="text-xs font-mono text-white/80 mt-1">
-                            {allReviews.length} Verified &amp; Moderated Reviews
+                            {allReviews.length} Customer Reviews
                           </p>
                         </div>
                         <div className="flex items-center gap-1 text-[#EAB308]" aria-hidden="true">
@@ -1422,27 +1320,33 @@ export default function App() {
                           ))}
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
                       {/* Left 5 Columns: Write a Review Form */}
-                      <div className="lg:col-span-5 lg:sticky lg:top-20 bg-white border-2 border-[#191A23] rounded-3xl p-5 sm:p-8 space-y-5">
+                      <motion.div
+                        initial={{ opacity: 0, y: 18 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4 }}
+                        className="lg:col-span-5 lg:sticky lg:top-20 bg-white border-2 border-[#191A23] rounded-3xl p-5 sm:p-8 space-y-5"
+                      >
                         <div className="flex items-center justify-between gap-2 pb-4 border-b border-[#191A23]/15">
                           <div>
-                            <h3 className="text-lg sm:text-xl font-display font-bold text-[#191A23]">
+                            <h3 className="text-lg sm:text-xl font-display font-bold text-[#0F172A]">
                               Write a Customer Review
                             </h3>
                             <p className="text-xs text-[#191A23]/80 mt-0.5">
                               {user
                                 ? `Posting as Verified Google User (${user.displayName || user.email})`
-                                : 'Posting as Guest Customer (Moderated before publishing)'}
+                                : 'Posting as Guest'}
                             </p>
                           </div>
                           {!user && (
                             <button
                               type="button"
                               onClick={handleGoogleSignIn}
-                              className="px-3 py-2 min-h-[38px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                              className="px-3 py-2 min-h-[38px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                             >
                               Or Sign In
                             </button>
@@ -1568,7 +1472,7 @@ export default function App() {
                                 value={revName}
                                 onChange={(e) => setRevName(e.target.value)}
                                 placeholder="e.g., Amit Verma"
-                                className="w-full px-3.5 py-2.5 min-h-[46px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                                className="w-full px-3.5 py-2.5 min-h-[46px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                               />
                             </div>
 
@@ -1588,7 +1492,7 @@ export default function App() {
                                 value={revLocality}
                                 onChange={(e) => setRevLocality(e.target.value)}
                                 placeholder="e.g., Dwarka Sec 12 / DLF Phase 3"
-                                className="w-full px-3.5 py-2.5 min-h-[46px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                                className="w-full px-3.5 py-2.5 min-h-[46px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                               />
                             </div>
                           </div>
@@ -1604,7 +1508,7 @@ export default function App() {
                               id="rev-service-select"
                               value={revService}
                               onChange={(e) => setRevService(e.target.value)}
-                              className="w-full px-3.5 py-2.5 min-h-[46px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                              className="w-full px-3.5 py-2.5 min-h-[46px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                             >
                               {displayServices.map((st) => (
                                 <option key={st.id} value={st.name}>
@@ -1630,14 +1534,14 @@ export default function App() {
                               value={revText}
                               onChange={(e) => setRevText(e.target.value)}
                               placeholder="Share how our technician performed, cooling improvement, or punctuality..."
-                              className="w-full px-3.5 py-2.5 text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                              className="w-full px-3.5 py-2.5 text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                             />
                           </div>
 
                           <button
                             type="submit"
                             disabled={revSubmitting}
-                            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[48px] text-sm font-bold text-[#191A23] bg-[#7DD3FC] border border-[#191A23] rounded-2xl hover:bg-[#38BDF8] active:translate-y-0.5 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[48px] text-sm font-bold text-[#0F172A] bg-gradient-to-r from-[#7DD3FC] to-[#38BDF8] border-2 border-[#191A23] rounded-2xl hover:from-[#38BDF8] hover:to-[#0EA5E9] hover:text-white hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                           >
                             <span>
                               {revSubmitting
@@ -1649,7 +1553,7 @@ export default function App() {
                             <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </form>
-                      </div>
+                      </motion.div>
 
                       {/* Right 7 Columns: Filter Bar + Paginated & Bounded Customer Reviews Feed */}
                       <div className="lg:col-span-7 space-y-4">
@@ -1663,10 +1567,10 @@ export default function App() {
                                   setReviewFilterRating(flt);
                                   setReviewPage(1);
                                 }}
-                                className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] text-xs font-bold rounded-xl border border-[#191A23] transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] ${
+                                className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] text-xs font-bold rounded-xl border border-[#191A23] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] ${
                                   reviewFilterRating === flt
-                                    ? 'bg-[#191A23] text-white'
-                                    : 'bg-[#F8FAFC] text-[#191A23] hover:bg-[#FEF9C3]'
+                                    ? 'bg-[#0F172A] text-white'
+                                    : 'bg-[#F8FAFC] text-[#191A23] hover:bg-[#E0F2FE] hover:-translate-y-0.5'
                                 }`}
                               >
                                 {flt === 'all' ? (
@@ -1708,27 +1612,23 @@ export default function App() {
                             </p>
                           </div>
                         ) : (
-                          <div className="space-y-3.5 max-h-[560px] overflow-y-auto pr-1">
+                          <div className="space-y-3.5 max-h-[560px] overflow-y-auto pr-1 pb-1">
                             {paginatedReviews.map((rev, idx) => {
-                              const globalIdx = reviewStartIdx + idx;
-                              const isDarkCard = globalIdx % 3 === 1;
-                              const canDelete =
-                                user &&
-                                (isAdmin ||
-                                  (rev.authorId !== 'guest' &&
-                                    rev.authorId === user.uid &&
-                                    !rev.id.startsWith('featured-')));
+                              // Verified Google User -> White Box; Guest -> Dark Navy Blue Box
+                              const isDarkCard = !rev.isVerifiedUser;
+                              const canDelete = Boolean(user && isAdmin);
                               const isConfirmingRevDel = confirmDeleteReviewId === rev.id;
 
                               return (
                                 <motion.div
                                   key={rev.id}
-                                  initial={{ opacity: 0, y: 10 }}
+                                  initial={{ opacity: 0, y: 12 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  transition={{ duration: 0.2 }}
-                                  className={`p-5 sm:p-6 rounded-3xl border-2 border-[#191A23] space-y-3 ${
+                                  transition={{ duration: 0.25, delay: idx * 0.04 }}
+                                  whileHover={{ y: -2 }}
+                                  className={`p-5 sm:p-6 rounded-3xl border-2 border-[#191A23] space-y-3 transition-all duration-200 ${
                                     isDarkCard
-                                      ? 'bg-[#191A23] text-white'
+                                      ? 'bg-[#0F172A] text-white'
                                       : 'bg-white text-[#191A23]'
                                   }`}
                                 >
@@ -1739,12 +1639,10 @@ export default function App() {
                                           {rev.authorName}
                                         </h4>
                                         <span
-                                          className={`inline-flex items-center gap-1 text-xs font-mono font-semibold px-2 py-0.5 rounded border border-[#191A23] ${
+                                          className={`inline-flex items-center gap-1 text-xs font-mono font-semibold px-2 py-0.5 rounded border ${
                                             rev.isVerifiedUser
-                                              ? 'bg-[#7DD3FC] text-[#191A23]'
-                                              : isDarkCard
-                                              ? 'bg-white/15 text-white border-white/30'
-                                              : 'bg-[#F3F3F3] text-[#191A23]'
+                                              ? 'bg-[#7DD3FC] text-[#191A23] border-[#191A23]'
+                                              : 'bg-white/15 text-[#7DD3FC] border-white/30'
                                           }`}
                                         >
                                           {rev.isVerifiedUser ? (
@@ -1755,7 +1653,7 @@ export default function App() {
                                           ) : (
                                             <>
                                               <UserCheck className="w-3 h-3" aria-hidden="true" />
-                                              <span>Moderated Guest</span>
+                                              <span>Guest</span>
                                             </>
                                           )}
                                         </span>
@@ -1794,8 +1692,12 @@ export default function App() {
                                         <button
                                           type="button"
                                           onClick={() => setConfirmDeleteReviewId(rev.id)}
-                                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                                          title="Delete review"
+                                          className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                                            isDarkCard
+                                              ? 'text-red-400 hover:bg-red-500/20'
+                                              : 'text-red-600 hover:bg-red-50'
+                                          }`}
+                                          title="Delete review (Admin)"
                                           aria-label={`Delete review by ${rev.authorName}`}
                                         >
                                           <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -1861,7 +1763,7 @@ export default function App() {
                                     onClick={() => setReviewPage(item)}
                                     className={`min-w-[34px] h-[34px] px-2 text-xs font-mono font-bold rounded-xl border border-[#191A23] transition-colors cursor-pointer ${
                                       currentReviewPage === item
-                                        ? 'bg-[#191A23] text-white'
+                                        ? 'bg-[#0F172A] text-white'
                                         : 'bg-white text-[#191A23] hover:bg-[#7DD3FC]'
                                     }`}
                                   >
@@ -1900,24 +1802,36 @@ export default function App() {
                 {/* SECTION 05: CONTACT US */}
                 <section id="send-message" className="scroll-mt-16 py-12 sm:py-16 lg:py-24">
                   <div className="w-full px-3 sm:px-4 lg:px-6">
-                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 sm:pb-10">
+                    <motion.div
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4 }}
+                      className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 sm:pb-10"
+                    >
                       <div className="space-y-2.5">
                         <div className="space-y-2">
-                          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-[#191A23]">
+                          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-[#0F172A]">
                             Contact Us
                           </h2>
-                          <div className="h-1.5 w-20 rounded-full bg-[#0369A1]" />
+                          <div className="h-1.5 w-20 rounded-full bg-gradient-to-r from-[#0284C7] to-[#38BDF8]" />
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-10 items-start">
                       {/* Left 7 Columns: Direct WhatsApp Inquiry Card */}
-                      <div className="lg:col-span-7 bg-white border-2 border-[#191A23] rounded-3xl overflow-hidden">
+                      <motion.div
+                        initial={{ opacity: 0, y: 18 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4 }}
+                        className="lg:col-span-7 bg-white border-2 border-[#191A23] rounded-3xl overflow-hidden"
+                      >
                         <div className="p-5 sm:p-8 space-y-6">
                           {/* Quick-Fill WhatsApp Templates (Dynamic Price Synced) */}
                           <div className="space-y-2.5">
-                            <p className="text-xs font-mono font-bold text-[#0369A1] uppercase tracking-wider">
+                            <p className="text-xs font-mono font-bold text-[#0284C7] uppercase tracking-wider">
                               Quick-Select Service Requirement:
                             </p>
                             <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2">
@@ -1930,7 +1844,7 @@ export default function App() {
                                     'Split AC (1 Unit)'
                                   )
                                 }
-                                className="px-3.5 py-2.5 min-h-[42px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer text-left sm:text-center whitespace-nowrap"
+                                className="px-3.5 py-2.5 min-h-[42px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] hover:-translate-y-0.5 rounded-xl transition-all cursor-pointer text-left sm:text-center whitespace-nowrap"
                               >
                                 Foam Jet Service (₹{foamJetPriceFormatted})
                               </button>
@@ -1943,7 +1857,7 @@ export default function App() {
                                     'Split AC (1.5 Ton)'
                                   )
                                 }
-                                className="px-3.5 py-2.5 min-h-[42px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer text-left sm:text-center whitespace-nowrap"
+                                className="px-3.5 py-2.5 min-h-[42px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] hover:-translate-y-0.5 rounded-xl transition-all cursor-pointer text-left sm:text-center whitespace-nowrap"
                               >
                                 Not Cooling / Gas Check
                               </button>
@@ -1956,7 +1870,7 @@ export default function App() {
                                     'Split AC (1 Unit)'
                                   )
                                 }
-                                className="px-3.5 py-2.5 min-h-[42px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer text-left sm:text-center whitespace-nowrap"
+                                className="px-3.5 py-2.5 min-h-[42px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] hover:-translate-y-0.5 rounded-xl transition-all cursor-pointer text-left sm:text-center whitespace-nowrap"
                               >
                                 AC Install / Uninstall
                               </button>
@@ -1969,7 +1883,7 @@ export default function App() {
                                     'Multiple AC Units (3+)'
                                   )
                                 }
-                                className="px-3.5 py-2.5 min-h-[42px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] rounded-xl transition-colors cursor-pointer text-left sm:text-center whitespace-nowrap"
+                                className="px-3.5 py-2.5 min-h-[42px] text-xs font-bold text-[#191A23] bg-[#F8FAFC] hover:bg-[#7DD3FC] border border-[#191A23] hover:-translate-y-0.5 rounded-xl transition-all cursor-pointer text-left sm:text-center whitespace-nowrap"
                               >
                                 Multi-Unit / AMC Quote
                               </button>
@@ -2008,7 +1922,7 @@ export default function App() {
                                   value={msgName}
                                   onChange={(e) => setMsgName(e.target.value)}
                                   placeholder="Full Name"
-                                  className="w-full px-4 py-3 min-h-[48px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                                  className="w-full px-4 py-3 min-h-[48px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                                 />
                               </div>
 
@@ -2026,7 +1940,7 @@ export default function App() {
                                   value={msgLocation}
                                   onChange={(e) => setMsgLocation(e.target.value)}
                                   placeholder="e.g., Dwarka, Vasant Kunj, or Gurugram Sector 56"
-                                  className="w-full px-4 py-3 min-h-[48px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                                  className="w-full px-4 py-3 min-h-[48px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                                 />
                               </div>
                             </div>
@@ -2043,7 +1957,7 @@ export default function App() {
                                   id="msg-ac-select"
                                   value={msgAcDetails}
                                   onChange={(e) => setMsgAcDetails(e.target.value)}
-                                  className="w-full px-4 py-3 min-h-[48px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                                  className="w-full px-4 py-3 min-h-[48px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                                 >
                                   <option value="Split AC (1 Unit)">Split AC (1 Unit)</option>
                                   <option value="Split AC (2 Units)">Split AC (2 Units)</option>
@@ -2071,7 +1985,7 @@ export default function App() {
                                   onChange={(e) =>
                                     setMsgSubject(e.target.value as MessageSubject)
                                   }
-                                  className="w-full px-4 py-3 min-h-[48px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                                  className="w-full px-4 py-3 min-h-[48px] text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                                 >
                                   <option value="General AC Inquiry">General AC Inquiry</option>
                                   <option value="Emergency Breakdown Support">
@@ -2104,14 +2018,14 @@ export default function App() {
                                 value={msgBody}
                                 onChange={(e) => setMsgBody(e.target.value)}
                                 placeholder="Describe your AC issue, model, or preferred visit time..."
-                                className="w-full px-4 py-3 text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#191A23]"
+                                className="w-full px-4 py-3 text-base sm:text-sm bg-[#F8FAFC] border border-[#191A23] rounded-xl placeholder:text-[#191A23]/60 focus:outline-2 focus:outline-offset-1 focus:outline-[#0284C7]"
                               />
                             </div>
 
                             <div className="pt-2">
                               <button
                                 type="submit"
-                                className="w-full inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-4 min-h-[50px] text-sm font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-xl hover:bg-[#4ADE80] active:translate-y-0.5 transition-all whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                                className="w-full inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-4 min-h-[50px] text-sm font-bold text-[#0F172A] bg-[#86EFAC] border-2 border-[#191A23] rounded-xl hover:bg-[#4ADE80] hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                               >
                                 <MessageCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
                                 <span>Send on WhatsApp</span>
@@ -2119,19 +2033,25 @@ export default function App() {
                             </div>
                           </form>
                         </div>
-                      </div>
+                      </motion.div>
 
                       {/* Right 5 Columns: Direct Engineer Helpline Card */}
-                      <div className="lg:col-span-5 lg:sticky lg:top-20">
+                      <motion.div
+                        initial={{ opacity: 0, y: 18 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: 0.08 }}
+                        className="lg:col-span-5 lg:sticky lg:top-20"
+                      >
                         <div className="bg-white border-2 border-[#191A23] rounded-3xl overflow-hidden">
-                          <div className="bg-[#E0F2FE] border-b border-[#191A23]/15 px-5 sm:px-7 py-4 flex items-center justify-between gap-2">
-                            <span className="text-xs font-mono font-bold text-[#0369A1]">
+                          <div className="bg-gradient-to-r from-[#E0F2FE] via-[#BAE6FD]/60 to-[#E0F2FE] border-b border-[#191A23]/15 px-5 sm:px-7 py-4 flex items-center justify-between gap-2">
+                            <span className="text-xs font-mono font-bold text-[#0284C7]">
                               {OPERATING_HOURS}
                             </span>
                           </div>
 
                           <div className="p-5 sm:p-7 space-y-5">
-                            <h3 className="text-lg sm:text-xl font-display font-bold text-[#191A23]">
+                            <h3 className="text-lg sm:text-xl font-display font-bold text-[#0F172A]">
                               Instant Call, WhatsApp &amp; Email Channels
                             </h3>
 
@@ -2143,23 +2063,23 @@ export default function App() {
                                 )}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-4 border border-[#191A23] bg-[#86EFAC] rounded-2xl flex items-center justify-between hover:bg-[#4ADE80] transition-all group"
+                                className="p-4 border-2 border-[#191A23] bg-[#86EFAC] rounded-2xl flex items-center justify-between hover:bg-[#4ADE80] hover:-translate-y-0.5 transition-all group"
                               >
                                 <div className="flex items-center gap-3.5">
-                                  <div className="w-10 h-10 rounded-xl bg-[#191A23] text-[#86EFAC] flex items-center justify-center shrink-0">
+                                  <div className="w-10 h-10 rounded-xl bg-[#0F172A] text-[#86EFAC] flex items-center justify-center shrink-0">
                                     <MessageCircle className="w-5 h-5" aria-hidden="true" />
                                   </div>
                                   <div>
-                                    <p className="text-xs text-[#191A23]/85 font-semibold">
+                                    <p className="text-xs text-[#0F172A]/85 font-semibold">
                                       Message on WhatsApp
                                     </p>
-                                    <p className="text-base font-mono font-bold text-[#191A23]">
+                                    <p className="text-base font-mono font-bold text-[#0F172A]">
                                       {CONTACT_PHONE_DISPLAY}
                                     </p>
                                   </div>
                                 </div>
                                 <ArrowUpRight
-                                  className="w-5 h-5 text-[#191A23] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                                  className="w-5 h-5 text-[#0F172A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
                                   aria-hidden="true"
                                 />
                               </a>
@@ -2167,31 +2087,34 @@ export default function App() {
                               {/* Phone Call Direct Button */}
                               <a
                                 href={CONTACT_PHONE_HREF}
-                                className="p-4 border border-[#191A23] bg-[#F8FAFC] rounded-2xl flex items-center justify-between hover:bg-[#E0F2FE] transition-colors group"
+                                className="p-4 border-2 border-[#191A23] bg-[#F8FAFC] rounded-2xl flex items-center justify-between hover:bg-[#E0F2FE] hover:-translate-y-0.5 transition-all group"
                               >
                                 <div className="flex items-center gap-3.5">
-                                  <div className="w-10 h-10 rounded-xl bg-[#191A23] text-white flex items-center justify-center shrink-0">
+                                  <div className="w-10 h-10 rounded-xl bg-[#0F172A] text-[#7DD3FC] flex items-center justify-center shrink-0">
                                     <Phone className="w-5 h-5" aria-hidden="true" />
                                   </div>
                                   <div>
                                     <p className="text-xs text-[#191A23]/80 font-medium">
                                       Daily 08:00 AM – 09:00 PM Dispatch Line
                                     </p>
-                                    <p className="text-base font-mono font-bold text-[#191A23]">
+                                    <p className="text-base font-mono font-bold text-[#0F172A]">
                                       {CONTACT_PHONE_DISPLAY}
                                     </p>
                                   </div>
                                 </div>
-                                <ArrowUpRight className="w-5 h-5 text-[#191A23]" aria-hidden="true" />
+                                <ArrowUpRight
+                                  className="w-5 h-5 text-[#0F172A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                                  aria-hidden="true"
+                                />
                               </a>
 
                               {/* Email Direct Button */}
                               <a
                                 href={`mailto:${OWNER_EMAIL}`}
-                                className="p-4 border border-[#191A23] bg-[#191A23] text-white rounded-2xl flex items-center justify-between hover:bg-[#0369A1] transition-colors group"
+                                className="p-4 border-2 border-[#191A23] bg-[#0F172A] text-white rounded-2xl flex items-center justify-between hover:bg-[#0284C7] hover:-translate-y-0.5 transition-all group"
                               >
                                 <div className="flex items-center gap-3.5 min-w-0">
-                                  <div className="w-10 h-10 rounded-xl bg-[#7DD3FC] text-[#191A23] flex items-center justify-center shrink-0">
+                                  <div className="w-10 h-10 rounded-xl bg-[#7DD3FC] text-[#0F172A] flex items-center justify-center shrink-0">
                                     <Mail className="w-5 h-5" aria-hidden="true" />
                                   </div>
                                   <div className="min-w-0">
@@ -2204,15 +2127,15 @@ export default function App() {
                                   </div>
                                 </div>
                                 <ArrowUpRight
-                                  className="w-5 h-5 text-[#7DD3FC] shrink-0 ml-2"
+                                  className="w-5 h-5 text-[#7DD3FC] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0 ml-2"
                                   aria-hidden="true"
                                 />
                               </a>
                             </div>
 
                             <div className="pt-4 border-t border-[#191A23]/15 space-y-2 text-xs text-[#191A23]/85">
-                              <div className="flex items-center gap-2 font-semibold text-[#191A23]">
-                                <MapPin className="w-4 h-4 text-[#0369A1] shrink-0" aria-hidden="true" />
+                              <div className="flex items-center gap-2 font-semibold text-[#0F172A]">
+                                <MapPin className="w-4 h-4 text-[#0284C7] shrink-0" aria-hidden="true" />
                                 <span>Dedicated Coverage: Delhi &amp; Gurugram</span>
                               </div>
                               <p className="text-xs font-mono text-[#191A23]/80 leading-relaxed">
@@ -2223,7 +2146,7 @@ export default function App() {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
                   </div>
                 </section>
@@ -2233,7 +2156,7 @@ export default function App() {
         </main>
 
         {/* COMPACT ARCHITECTURAL FOOTER */}
-        <footer className="bg-[#191A23] text-white border-t-2 border-[#191A23] mt-6">
+        <footer className="bg-[#0F172A] text-white border-t-2 border-[#191A23] mt-6">
           <div className="w-full px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6 pb-5 border-b border-white/15 items-start">
               {/* Column 1 (4 cols): Brand Identity + Rating Badge */}
@@ -2254,17 +2177,6 @@ export default function App() {
                   Independent doorstep AC jet servicing, gas charging, PCB repair &amp; installation
                   across Delhi &amp; Gurugram.
                 </p>
-
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5 border border-white/15">
-                  <div className="flex items-center gap-0.5" aria-hidden="true">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="w-3 h-3 fill-[#EAB308] text-[#EAB308]" />
-                    ))}
-                  </div>
-                  <span className="text-xs font-mono font-bold text-white">
-                    {averageRating} / 5.0 Rated
-                  </span>
-                </div>
               </div>
 
               {/* Column 2 (2 cols): Quick Links */}
@@ -2282,7 +2194,7 @@ export default function App() {
                       }}
                       className="hover:text-[#7DD3FC] transition-colors"
                     >
-                      Services &amp; Rate Card
+                      Services
                     </a>
                   </li>
                   <li>
@@ -2297,18 +2209,7 @@ export default function App() {
                       Working Process
                     </a>
                   </li>
-                  <li>
-                    <a
-                      href="#faq"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigateHomeSection('faq');
-                      }}
-                      className="hover:text-[#7DD3FC] transition-colors"
-                    >
-                      FAQs
-                    </a>
-                  </li>
+
                   <li>
                     <a
                       href="#reviews"
@@ -2331,18 +2232,6 @@ export default function App() {
                       className="hover:text-[#7DD3FC] transition-colors"
                     >
                       Contact Us
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="/admin"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        openAdminDashboard();
-                      }}
-                      className="text-[#7DD3FC] font-mono font-bold hover:underline"
-                    >
-                      Admin Login
                     </a>
                   </li>
                 </ul>

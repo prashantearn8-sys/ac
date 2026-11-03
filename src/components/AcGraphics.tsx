@@ -17,7 +17,8 @@ export const CoolBrosLogo: React.FC<{ className?: string }> = ({
 
 /**
  * Hero Illustration:
- * Split AC Indoor Unit + Outdoor Condenser Fan + 140 PSI Hydro-Jet + Digital Manifold Gauge.
+ * Split AC Indoor Unit + Outdoor Condenser Fan + 140 PSI Hydro-Jet + Digital Manifold Gauge
+ * with Rich Glacial Colours & Multi-Layer Motion Animations (Zero Shadows).
  */
 export const HeroCoolingIllustration: React.FC = () => {
   return (
@@ -33,16 +34,50 @@ export const HeroCoolingIllustration: React.FC = () => {
         aria-hidden="true"
         focusable="false"
       >
-        {/* Background Tilted Airflow Orbital Rings */}
+        <defs>
+          <linearGradient id="hero-ice-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#BAE6FD" />
+            <stop offset="50%" stopColor="#7DD3FC" />
+            <stop offset="100%" stopColor="#38BDF8" />
+          </linearGradient>
+          <linearGradient id="hero-deep-navy" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1E293B" />
+            <stop offset="100%" stopColor="#0F172A" />
+          </linearGradient>
+          <linearGradient id="hero-jet-spray" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#E0F2FE" stopOpacity="0.25" />
+          </linearGradient>
+          <radialGradient id="hero-frost-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.28" />
+            <stop offset="70%" stopColor="#BAE6FD" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Ambient Glacial Halo Behind Units */}
+        <motion.circle
+          cx="272"
+          cy="235"
+          r="185"
+          fill="url(#hero-frost-glow)"
+          animate={{ scale: [0.96, 1.05, 0.96], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '272px 235px' }}
+        />
+
+        {/* Background Tilted Airflow Orbital Rings with Animated Dash Flow */}
         <g transform="rotate(-14 270 265)">
-          <ellipse
+          <motion.ellipse
             cx="270"
             cy="265"
             rx="215"
             ry="58"
-            stroke="#191A23"
+            stroke="#0284C7"
             strokeWidth="1.75"
-            strokeDasharray="6 6"
+            strokeDasharray="8 6"
+            animate={{ strokeDashoffset: [0, -56] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
           />
           <ellipse
             cx="270"
@@ -51,6 +86,7 @@ export const HeroCoolingIllustration: React.FC = () => {
             ry="48"
             stroke="#191A23"
             strokeWidth="1.75"
+            strokeOpacity="0.85"
           />
         </g>
 
@@ -65,13 +101,13 @@ export const HeroCoolingIllustration: React.FC = () => {
             width="166"
             height="122"
             rx="16"
-            fill="#F3F3F3"
+            fill="#F8FAFC"
             stroke="#191A23"
             strokeWidth="2.5"
           />
           <path
             d="M46 266C46 257.163 53.1634 250 62 250H196C204.837 250 212 257.163 212 266V270H46V266Z"
-            fill="#7DD3FC"
+            fill="url(#hero-ice-grad)"
             stroke="#191A23"
             strokeWidth="2.5"
           />
@@ -79,18 +115,18 @@ export const HeroCoolingIllustration: React.FC = () => {
             cx="110"
             cy="320"
             r="40"
-            fill="#191A23"
+            fill="url(#hero-deep-navy)"
             stroke="#191A23"
             strokeWidth="2.5"
           />
           <motion.g
             animate={{ rotate: 360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: 'linear' }}
             style={{ transformOrigin: '110px 320px' }}
           >
             <path
               d="M110 320C102 302 104 286 114 286C122 286 120 304 110 320Z"
-              fill="#7DD3FC"
+              fill="#38BDF8"
             />
             <path
               d="M110 320C128 312 144 314 144 324C144 332 126 330 110 320Z"
@@ -98,7 +134,7 @@ export const HeroCoolingIllustration: React.FC = () => {
             />
             <path
               d="M110 320C118 338 116 354 106 354C98 354 100 336 110 320Z"
-              fill="#7DD3FC"
+              fill="#38BDF8"
             />
             <path
               d="M110 320C92 328 76 326 76 316C76 308 94 310 110 320Z"
@@ -115,7 +151,7 @@ export const HeroCoolingIllustration: React.FC = () => {
             width="32"
             height="28"
             rx="6"
-            fill="#FFFFFF"
+            fill="#E0F2FE"
             stroke="#191A23"
             strokeWidth="2"
           />
@@ -123,7 +159,7 @@ export const HeroCoolingIllustration: React.FC = () => {
             x="180"
             y="344"
             textAnchor="middle"
-            fill="#191A23"
+            fill="#0369A1"
             fontSize="10"
             fontWeight="800"
             fontFamily="monospace"
@@ -132,19 +168,21 @@ export const HeroCoolingIllustration: React.FC = () => {
           </text>
         </motion.g>
 
-        {/* Insulated Copper Refrigerant Piping Connecting Indoor & Outdoor Units */}
+        {/* Insulated Copper Refrigerant Piping with Animated Sub-Zero Flow */}
         <path
           d="M212 340H268C284 340 296 328 296 312V208"
           stroke="#191A23"
-          strokeWidth="8"
+          strokeWidth="9"
           strokeLinecap="round"
         />
-        <path
+        <motion.path
           d="M212 340H268C284 340 296 328 296 312V208"
-          stroke="#7DD3FC"
-          strokeWidth="3.5"
-          strokeDasharray="8 6"
+          stroke="#38BDF8"
+          strokeWidth="4"
+          strokeDasharray="10 7"
           strokeLinecap="round"
+          animate={{ strokeDashoffset: [34, 0] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
         />
 
         {/* High-Wall Split AC Indoor Unit (Top-Center Main Hero Unit) */}
@@ -164,7 +202,7 @@ export const HeroCoolingIllustration: React.FC = () => {
           />
           <path
             d="M132 80H404C416.15 80 426 89.8497 426 102V106H110V102C110 89.8497 119.85 80 132 80Z"
-            fill="#7DD3FC"
+            fill="url(#hero-ice-grad)"
             stroke="#191A23"
             strokeWidth="2.5"
           />
@@ -176,9 +214,16 @@ export const HeroCoolingIllustration: React.FC = () => {
             width="66"
             height="22"
             rx="6"
-            fill="#191A23"
+            fill="#0F172A"
           />
-          <circle cx="349" cy="123" r="3.5" fill="#7DD3FC" />
+          <motion.circle
+            cx="349"
+            cy="123"
+            r="3.5"
+            fill="#4ADE80"
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          />
           <text
             x="378"
             y="127"
@@ -197,7 +242,7 @@ export const HeroCoolingIllustration: React.FC = () => {
             width="58"
             height="18"
             rx="5"
-            fill="#F3F3F3"
+            fill="#E0F2FE"
             stroke="#191A23"
             strokeWidth="1.75"
           />
@@ -205,7 +250,7 @@ export const HeroCoolingIllustration: React.FC = () => {
             x="161"
             y="126"
             textAnchor="middle"
-            fill="#191A23"
+            fill="#0369A1"
             fontSize="9"
             fontWeight="800"
             fontFamily="monospace"
@@ -215,7 +260,7 @@ export const HeroCoolingIllustration: React.FC = () => {
 
           <path
             d="M124 156H412L402 178H134L124 156Z"
-            fill="#7DD3FC"
+            fill="url(#hero-ice-grad)"
             stroke="#191A23"
             strokeWidth="2.5"
             strokeLinejoin="round"
@@ -226,36 +271,40 @@ export const HeroCoolingIllustration: React.FC = () => {
           <line x1="320" y1="156" x2="325" y2="178" stroke="#191A23" strokeWidth="2" />
           <line x1="370" y1="156" x2="375" y2="178" stroke="#191A23" strokeWidth="2" />
 
+          {/* Animated Chilled Airflow Streams */}
           <motion.g
-            animate={{ y: [0, 8, 0], opacity: [0.85, 1, 0.85] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ y: [0, 10, 0], opacity: [0.65, 1, 0.65] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
           >
             <path
               d="M162 198C154 214 166 226 156 242"
-              stroke="#191A23"
-              strokeWidth="2.5"
+              stroke="#0284C7"
+              strokeWidth="2.75"
               strokeLinecap="round"
               strokeDasharray="5 5"
             />
             <path
               d="M235 198C227 218 240 232 228 252"
-              stroke="#191A23"
-              strokeWidth="2.5"
+              stroke="#38BDF8"
+              strokeWidth="2.75"
               strokeLinecap="round"
             />
             <path
               d="M312 198C304 218 318 232 306 252"
-              stroke="#191A23"
-              strokeWidth="2.5"
+              stroke="#0284C7"
+              strokeWidth="2.75"
               strokeLinecap="round"
             />
             <path
               d="M376 198C368 214 380 226 370 242"
-              stroke="#191A23"
-              strokeWidth="2.5"
+              stroke="#38BDF8"
+              strokeWidth="2.75"
               strokeLinecap="round"
               strokeDasharray="5 5"
             />
+            <circle cx="195" cy="224" r="3" fill="#38BDF8" />
+            <circle cx="272" cy="232" r="3.5" fill="#0284C7" />
+            <circle cx="344" cy="220" r="2.5" fill="#38BDF8" />
           </motion.g>
         </motion.g>
 
@@ -264,21 +313,52 @@ export const HeroCoolingIllustration: React.FC = () => {
           animate={{ x: [0, -5, 0], y: [0, -4, 0] }}
           transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <path
+          <motion.path
             d="M354 244L276 188L326 176L354 244Z"
-            fill="#7DD3FC"
-            fillOpacity="0.65"
-            stroke="#191A23"
+            fill="url(#hero-jet-spray)"
+            stroke="#0284C7"
             strokeWidth="2"
             strokeDasharray="4 4"
+            animate={{ opacity: [0.65, 1, 0.65] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
           />
-          <circle cx="282" cy="184" r="9" fill="#FFFFFF" stroke="#191A23" strokeWidth="2" />
-          <circle cx="300" cy="178" r="12" fill="#7DD3FC" stroke="#191A23" strokeWidth="2" />
-          <circle cx="318" cy="184" r="8" fill="#FFFFFF" stroke="#191A23" strokeWidth="2" />
+          <motion.circle
+            cx="282"
+            cy="184"
+            r="9"
+            fill="#FFFFFF"
+            stroke="#191A23"
+            strokeWidth="2"
+            animate={{ scale: [0.9, 1.12, 0.9] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ transformOrigin: '282px 184px' }}
+          />
+          <motion.circle
+            cx="300"
+            cy="178"
+            r="12"
+            fill="#7DD3FC"
+            stroke="#191A23"
+            strokeWidth="2"
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 2.1, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+            style={{ transformOrigin: '300px 178px' }}
+          />
+          <motion.circle
+            cx="318"
+            cy="184"
+            r="8"
+            fill="#BAE6FD"
+            stroke="#191A23"
+            strokeWidth="2"
+            animate={{ scale: [0.92, 1.14, 0.92] }}
+            transition={{ duration: 1.7, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+            style={{ transformOrigin: '318px 184px' }}
+          />
 
           <path
             d="M352 242L420 296L408 312L340 256L352 242Z"
-            fill="#191A23"
+            fill="#0F172A"
             stroke="#191A23"
             strokeWidth="2"
             strokeLinejoin="round"
@@ -290,7 +370,7 @@ export const HeroCoolingIllustration: React.FC = () => {
             height="28"
             rx="8"
             transform="rotate(38 408 286)"
-            fill="#7DD3FC"
+            fill="url(#hero-ice-grad)"
             stroke="#191A23"
             strokeWidth="2.5"
           />
@@ -306,11 +386,19 @@ export const HeroCoolingIllustration: React.FC = () => {
             cx="392"
             cy="348"
             r="28"
-            fill="#7DD3FC"
+            fill="url(#hero-ice-grad)"
             stroke="#191A23"
             strokeWidth="2"
           />
-          <path d="M392 348L406 334" stroke="#191A23" strokeWidth="3" strokeLinecap="round" />
+          <motion.path
+            d="M392 348L406 334"
+            stroke="#191A23"
+            strokeWidth="3"
+            strokeLinecap="round"
+            animate={{ rotate: [-8, 12, -8] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ transformOrigin: '392px 348px' }}
+          />
           <circle cx="392" cy="348" r="4" fill="#191A23" />
           <text
             x="392"
@@ -327,14 +415,15 @@ export const HeroCoolingIllustration: React.FC = () => {
 
         {/* Floating Badge 1: Top-Left Sub-Zero Snowflake Badge */}
         <motion.g
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
+          animate={{ y: [0, -8, 0], rotate: [0, 8, 0, -8, 0] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '62px 114px' }}
         >
           <circle
             cx="62"
             cy="114"
             r="34"
-            fill="#7DD3FC"
+            fill="url(#hero-ice-grad)"
             stroke="#191A23"
             strokeWidth="2.5"
           />
@@ -352,7 +441,7 @@ export const HeroCoolingIllustration: React.FC = () => {
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 3.7, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
         >
-          <circle cx="482" cy="118" r="34" fill="#191A23" />
+          <circle cx="482" cy="118" r="34" fill="#0F172A" stroke="#191A23" strokeWidth="2" />
           <rect
             x="477"
             y="95"
@@ -360,17 +449,17 @@ export const HeroCoolingIllustration: React.FC = () => {
             height="28"
             rx="5"
             fill="#FFFFFF"
-            stroke="#7DD3FC"
+            stroke="#38BDF8"
             strokeWidth="2"
           />
-          <circle cx="482" cy="128" r="9" fill="#7DD3FC" />
-          <line x1="482" y1="104" x2="482" y2="128" stroke="#7DD3FC" strokeWidth="3.5" />
+          <circle cx="482" cy="128" r="9" fill="#38BDF8" />
+          <line x1="482" y1="104" x2="482" y2="128" stroke="#38BDF8" strokeWidth="3.5" />
           <line x1="491" y1="102" x2="496" y2="102" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
           <line x1="491" y1="109" x2="498" y2="109" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
           <line x1="491" y1="116" x2="496" y2="116" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
         </motion.g>
 
-        {/* Floating Badge 3: Middle-Right Warranty Shield Badge */}
+        {/* Floating Badge 3: Middle-Right Verified Quality Shield Badge */}
         <motion.g
           animate={{ y: [0, -7, 0] }}
           transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
@@ -385,7 +474,7 @@ export const HeroCoolingIllustration: React.FC = () => {
           />
           <path
             d="M484 202L500 208V220C500 231 493 239 484 242C475 239 468 231 468 220V208L484 202Z"
-            fill="#7DD3FC"
+            fill="url(#hero-ice-grad)"
             stroke="#191A23"
             strokeWidth="2"
             strokeLinejoin="round"
@@ -399,7 +488,7 @@ export const HeroCoolingIllustration: React.FC = () => {
           />
         </motion.g>
 
-        {/* Bottom Telemetry Pill Tag */}
+        {/* Bottom Telemetry Tag */}
         <g transform="translate(154, 412)">
           <rect
             x="0"
@@ -407,16 +496,16 @@ export const HeroCoolingIllustration: React.FC = () => {
             width="212"
             height="40"
             rx="12"
-            fill="#7DD3FC"
+            fill="url(#hero-ice-grad)"
             stroke="#191A23"
             strokeWidth="2.2"
           />
-          <circle cx="22" cy="20" r="6" fill="#191A23" />
+          <circle cx="22" cy="20" r="5.5" fill="#0F172A" />
           <text
             x="114"
             y="24"
             textAnchor="middle"
-            fill="#191A23"
+            fill="#0F172A"
             fontSize="11"
             fontWeight="800"
             fontFamily="monospace"
@@ -430,7 +519,7 @@ export const HeroCoolingIllustration: React.FC = () => {
 };
 
 /**
- * Custom HVAC & AC Engineering Illustrations for the 6 Service Cards
+ * Custom Animated HVAC & AC Engineering Illustrations for the 6 Service Cards (Zero Shadows)
  */
 export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) => {
   const variant = index % 6;
@@ -442,7 +531,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0"
+        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
       >
         <rect
           x="16"
@@ -460,46 +549,89 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           width="96"
           height="22"
           rx="4"
-          fill="#7DD3FC"
+          fill="#38BDF8"
           stroke="#191A23"
           strokeWidth="1.75"
         />
         {[38, 50, 62, 74, 86, 98, 110].map((x) => (
           <line key={x} x1={x} y1="26" x2={x} y2="48" stroke="#191A23" strokeWidth="1.4" />
         ))}
-        <rect x="130" y="30" width="22" height="12" rx="3" fill="#191A23" />
-        <circle cx="141" cy="36" r="2.5" fill="#7DD3FC" />
+        <rect x="130" y="30" width="22" height="12" rx="3" fill="#0F172A" />
+        <motion.circle
+          cx="141"
+          cy="36"
+          r="2.5"
+          fill="#4ADE80"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.6, repeat: Infinity }}
+        />
         <path
           d="M24 70L42 126H134L152 70"
-          fill="#7DD3FC"
-          fillOpacity="0.35"
-          stroke="#191A23"
+          fill="#BAE6FD"
+          fillOpacity="0.45"
+          stroke="#0284C7"
           strokeWidth="1.8"
           strokeDasharray="4 3"
         />
-        <path
-          d="M142 108L76 48L114 48L142 108Z"
-          fill="#7DD3FC"
-          stroke="#191A23"
-          strokeWidth="1.75"
-        />
-        <circle cx="72" cy="48" r="7" fill="#FFFFFF" stroke="#191A23" strokeWidth="1.75" />
-        <circle cx="86" cy="44" r="9" fill="#FFFFFF" stroke="#191A23" strokeWidth="1.75" />
-        <circle cx="102" cy="49" r="6" fill="#7DD3FC" stroke="#191A23" strokeWidth="1.75" />
-        <path
-          d="M138 104L188 134L180 146L130 114L138 104Z"
-          fill="#191A23"
-          stroke="#191A23"
-          strokeWidth="1.75"
-          strokeLinejoin="round"
-        />
+        <motion.g
+          animate={{ x: [0, -3, 0], y: [0, -2, 0] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <path
+            d="M142 108L76 48L114 48L142 108Z"
+            fill="#7DD3FC"
+            fillOpacity="0.85"
+            stroke="#191A23"
+            strokeWidth="1.75"
+          />
+          <motion.circle
+            cx="72"
+            cy="48"
+            r="7"
+            fill="#FFFFFF"
+            stroke="#191A23"
+            strokeWidth="1.75"
+            animate={{ scale: [0.9, 1.12, 0.9] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            style={{ transformOrigin: '72px 48px' }}
+          />
+          <motion.circle
+            cx="86"
+            cy="44"
+            r="9"
+            fill="#E0F2FE"
+            stroke="#191A23"
+            strokeWidth="1.75"
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity, delay: 0.25 }}
+            style={{ transformOrigin: '86px 44px' }}
+          />
+          <motion.circle
+            cx="102"
+            cy="49"
+            r="6"
+            fill="#38BDF8"
+            stroke="#191A23"
+            strokeWidth="1.75"
+            animate={{ scale: [0.9, 1.15, 0.9] }}
+            transition={{ duration: 1.4, repeat: Infinity, delay: 0.5 }}
+            style={{ transformOrigin: '102px 49px' }}
+          />
+          <path
+            d="M138 104L188 134L180 146L130 114L138 104Z"
+            fill="#0F172A"
+            stroke="#191A23"
+            strokeWidth="1.75"
+            strokeLinejoin="round"
+          />
+        </motion.g>
         <rect
           x="18"
           y="120"
           width="68"
           height="24"
           rx="6"
-          fill="#191A23"
+          fill="#0F172A"
         />
         <text
           x="52"
@@ -523,7 +655,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0"
+        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
       >
         <rect
           x="24"
@@ -536,7 +668,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           strokeWidth="2.2"
         />
         {[40, 60, 80, 100].map((y) => (
-          <line key={y} x1="34" y1={y} x2="132" y2={y} stroke="#191A23" strokeWidth="3.5" strokeLinecap="round" />
+          <line key={y} x1="34" y1={y} x2="132" y2={y} stroke="#0284C7" strokeWidth="3.5" strokeLinecap="round" />
         ))}
         {[46, 62, 78, 94, 110, 122].map((x) => (
           <line key={x} x1={x} y1="30" x2={x} y2="110" stroke="#191A23" strokeWidth="1.5" />
@@ -547,28 +679,39 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           strokeWidth="3.5"
           strokeLinecap="round"
         />
-        <path
-          d="M150 40L188 54V84C188 110 171 128 150 136C129 128 112 110 112 84V54L150 40Z"
-          fill="#FFFFFF"
-          stroke="#191A23"
-          strokeWidth="2.2"
-          strokeLinejoin="round"
+        <motion.g
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <path
+            d="M150 40L188 54V84C188 110 171 128 150 136C129 128 112 110 112 84V54L150 40Z"
+            fill="#FFFFFF"
+            stroke="#191A23"
+            strokeWidth="2.2"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M150 50L178 60V84C178 103 165 117 150 124C135 117 122 103 122 84V60L150 50Z"
+            fill="#38BDF8"
+            stroke="#191A23"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M138 86L147 95L164 76"
+            stroke="#0F172A"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </motion.g>
+        <motion.path
+          d="M178 18L181 26L189 29L181 32L178 40L175 32L167 29L175 26L178 18Z"
+          fill="#0284C7"
+          animate={{ scale: [0.8, 1.2, 0.8], rotate: [0, 15, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '178px 29px' }}
         />
-        <path
-          d="M150 50L178 60V84C178 103 165 117 150 124C135 117 122 103 122 84V60L150 50Z"
-          fill="#7DD3FC"
-          stroke="#191A23"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M138 86L147 95L164 76"
-          stroke="#191A23"
-          strokeWidth="3.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path d="M178 18L181 26L189 29L181 32L178 40L175 32L167 29L175 26L178 18Z" fill="#191A23" />
       </svg>
     );
   }
@@ -580,7 +723,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0"
+        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
       >
         <rect
           x="28"
@@ -588,15 +731,15 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           width="66"
           height="96"
           rx="16"
-          fill="#7DD3FC"
-          stroke="#FFFFFF"
+          fill="#38BDF8"
+          stroke="#191A23"
           strokeWidth="2.2"
         />
         <path
           d="M44 46V30C44 26 47 24 51 24H71C75 24 78 26 78 30V46"
-          stroke="#FFFFFF"
-          strokeWidth="2.5"
-          fill="#191A23"
+          stroke="#191A23"
+          strokeWidth="2.2"
+          fill="#0F172A"
         />
         <circle cx="61" cy="34" r="5" fill="#7DD3FC" />
         <rect
@@ -605,7 +748,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           width="46"
           height="26"
           rx="5"
-          fill="#191A23"
+          fill="#0F172A"
         />
         <text
           x="61"
@@ -620,9 +763,18 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         </text>
         <path
           d="M78 34C112 34 106 88 136 88"
-          stroke="#FFFFFF"
-          strokeWidth="2.5"
+          stroke="#191A23"
+          strokeWidth="4.5"
           strokeLinecap="round"
+        />
+        <motion.path
+          d="M78 34C112 34 106 88 136 88"
+          stroke="#7DD3FC"
+          strokeWidth="2"
+          strokeDasharray="5 4"
+          strokeLinecap="round"
+          animate={{ strokeDashoffset: [18, 0] }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
         />
         <rect
           x="118"
@@ -638,18 +790,26 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           cx="155"
           cy="68"
           r="23"
-          fill="#7DD3FC"
+          fill="#E0F2FE"
           stroke="#191A23"
           strokeWidth="2"
         />
-        <path d="M155 68L168 55" stroke="#191A23" strokeWidth="2.5" strokeLinecap="round" />
+        <motion.path
+          d="M155 68L168 55"
+          stroke="#0284C7"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          animate={{ rotate: [-12, 14, -12] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '155px 68px' }}
+        />
         <circle cx="155" cy="68" r="3.5" fill="#191A23" />
-        <rect x="128" y="98" width="54" height="16" rx="4" fill="#191A23" />
+        <rect x="128" y="98" width="54" height="16" rx="4" fill="#0F172A" />
         <text
           x="155"
           y="109"
           textAnchor="middle"
-          fill="#7DD3FC"
+          fill="#4ADE80"
           fontSize="8.5"
           fontWeight="800"
           fontFamily="monospace"
@@ -667,7 +827,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0"
+        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
       >
         <rect
           x="24"
@@ -681,13 +841,13 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         />
         <path
           d="M24 38C24 31.3726 29.3726 26 36 26H140C146.627 26 152 31.3726 152 38V50H24V38Z"
-          fill="#7DD3FC"
+          fill="#38BDF8"
           stroke="#191A23"
           strokeWidth="2.2"
         />
-        <rect x="48" y="18" width="8" height="16" rx="4" fill="#191A23" />
-        <rect x="84" y="18" width="8" height="16" rx="4" fill="#191A23" />
-        <rect x="120" y="18" width="8" height="16" rx="4" fill="#191A23" />
+        <rect x="48" y="18" width="8" height="16" rx="4" fill="#0F172A" />
+        <rect x="84" y="18" width="8" height="16" rx="4" fill="#0F172A" />
+        <rect x="120" y="18" width="8" height="16" rx="4" fill="#0F172A" />
         {[64, 86, 108].map((y, i) => (
           <g key={y}>
             <rect
@@ -696,7 +856,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
               width="16"
               height="14"
               rx="4"
-              fill="#7DD3FC"
+              fill="#86EFAC"
               stroke="#191A23"
               strokeWidth="1.75"
             />
@@ -718,37 +878,43 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
             />
           </g>
         ))}
-        <circle
-          cx="158"
-          cy="104"
-          r="32"
-          fill="#7DD3FC"
-          stroke="#191A23"
-          strokeWidth="2.2"
-        />
-        <circle cx="158" cy="104" r="22" fill="#FFFFFF" stroke="#191A23" strokeWidth="1.75" />
-        <text
-          x="158"
-          y="102"
-          textAnchor="middle"
-          fill="#191A23"
-          fontSize="10"
-          fontWeight="800"
-          fontFamily="monospace"
+        <motion.g
+          animate={{ y: [0, -4, 0], scale: [1, 1.04, 1] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '158px 104px' }}
         >
-          365d
-        </text>
-        <text
-          x="158"
-          y="113"
-          textAnchor="middle"
-          fill="#191A23"
-          fontSize="8"
-          fontWeight="800"
-          fontFamily="monospace"
-        >
-          AMC
-        </text>
+          <circle
+            cx="158"
+            cy="104"
+            r="32"
+            fill="#38BDF8"
+            stroke="#191A23"
+            strokeWidth="2.2"
+          />
+          <circle cx="158" cy="104" r="22" fill="#FFFFFF" stroke="#191A23" strokeWidth="1.75" />
+          <text
+            x="158"
+            y="102"
+            textAnchor="middle"
+            fill="#0F172A"
+            fontSize="10"
+            fontWeight="800"
+            fontFamily="monospace"
+          >
+            365d
+          </text>
+          <text
+            x="158"
+            y="113"
+            textAnchor="middle"
+            fill="#0284C7"
+            fontSize="8"
+            fontWeight="800"
+            fontFamily="monospace"
+          >
+            AMC
+          </text>
+        </motion.g>
       </svg>
     );
   }
@@ -760,7 +926,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0"
+        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
       >
         <rect
           x="20"
@@ -778,19 +944,19 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           width="52"
           height="46"
           rx="6"
-          fill="#191A23"
+          fill="#0F172A"
         />
         {[60, 70, 80, 90].map((y) => (
           <g key={y}>
-            <line x1="48" y1={y} x2="58" y2={y} stroke="#191A23" strokeWidth="2.2" />
-            <line x1="110" y1={y} x2="120" y2={y} stroke="#191A23" strokeWidth="2.2" />
+            <line x1="48" y1={y} x2="58" y2={y} stroke="#0284C7" strokeWidth="2.2" />
+            <line x1="110" y1={y} x2="120" y2={y} stroke="#0284C7" strokeWidth="2.2" />
           </g>
         ))}
         <text
           x="84"
           y="79"
           textAnchor="middle"
-          fill="#7DD3FC"
+          fill="#38BDF8"
           fontSize="10"
           fontWeight="800"
           fontFamily="monospace"
@@ -798,16 +964,36 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           PCB IC
         </text>
         <path d="M34 40H52L62 52" stroke="#191A23" strokeWidth="1.75" />
-        <circle cx="34" cy="40" r="3.5" fill="#7DD3FC" stroke="#191A23" strokeWidth="1.5" />
+        <motion.circle
+          cx="34"
+          cy="40"
+          r="4"
+          fill="#38BDF8"
+          stroke="#191A23"
+          strokeWidth="1.5"
+          animate={{ scale: [0.9, 1.25, 0.9] }}
+          transition={{ duration: 1.6, repeat: Infinity }}
+          style={{ transformOrigin: '34px 40px' }}
+        />
         <path d="M34 110H56L66 98" stroke="#191A23" strokeWidth="1.75" />
-        <circle cx="34" cy="110" r="3.5" fill="#7DD3FC" stroke="#191A23" strokeWidth="1.5" />
+        <motion.circle
+          cx="34"
+          cy="110"
+          r="4"
+          fill="#4ADE80"
+          stroke="#191A23"
+          strokeWidth="1.5"
+          animate={{ scale: [1, 1.25, 1] }}
+          transition={{ duration: 1.6, repeat: Infinity, delay: 0.5 }}
+          style={{ transformOrigin: '34px 110px' }}
+        />
         <rect
           x="136"
           y="42"
           width="48"
           height="88"
           rx="10"
-          fill="#F3F3F3"
+          fill="#F8FAFC"
           stroke="#191A23"
           strokeWidth="2.2"
         />
@@ -825,15 +1011,26 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
           x="160"
           y="65"
           textAnchor="middle"
-          fill="#191A23"
+          fill="#0F172A"
           fontSize="8.5"
           fontWeight="800"
           fontFamily="monospace"
         >
           230V
         </text>
-        <circle cx="160" cy="96" r="14" fill="#191A23" />
-        <line x1="160" y1="96" x2="168" y2="88" stroke="#7DD3FC" strokeWidth="2.2" strokeLinecap="round" />
+        <circle cx="160" cy="96" r="14" fill="#0F172A" />
+        <motion.line
+          x1="160"
+          y1="96"
+          x2="168"
+          y2="88"
+          stroke="#38BDF8"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          animate={{ rotate: [-20, 20, -20] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '160px 96px' }}
+        />
       </svg>
     );
   }
@@ -844,7 +1041,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
       fill="none"
       aria-hidden="true"
       focusable="false"
-      className="w-36 sm:w-44 h-28 sm:h-36 shrink-0"
+      className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
     >
       <rect
         x="22"
@@ -856,8 +1053,8 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         stroke="#191A23"
         strokeWidth="2"
       />
-      <path d="M32 62H168" stroke="#191A23" strokeWidth="2" />
-      <rect x="134" y="34" width="30" height="14" rx="4" fill="#191A23" />
+      <path d="M32 62H168" stroke="#0284C7" strokeWidth="2" />
+      <rect x="134" y="34" width="30" height="14" rx="4" fill="#0F172A" />
       <text
         x="149"
         y="44"
@@ -876,8 +1073,8 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         width="144"
         height="24"
         rx="6"
-        fill="#7DD3FC"
-        stroke="#FFFFFF"
+        fill="#38BDF8"
+        stroke="#191A23"
         strokeWidth="2"
       />
       <rect
@@ -890,19 +1087,28 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         stroke="#191A23"
         strokeWidth="1.75"
       />
-      <circle cx="100" cy="100" r="5" fill="#191A23" />
+      <motion.circle
+        cx="100"
+        cy="100"
+        r="5"
+        fill="#4ADE80"
+        stroke="#191A23"
+        strokeWidth="1.2"
+        animate={{ x: [-3, 3, -3] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+      />
       <line x1="92" y1="93" x2="92" y2="107" stroke="#191A23" strokeWidth="1.5" />
       <line x1="108" y1="93" x2="108" y2="107" stroke="#191A23" strokeWidth="1.5" />
 
-      <line x1="22" y1="132" x2="178" y2="132" stroke="#7DD3FC" strokeWidth="2" strokeDasharray="4 4" />
-      <circle cx="22" cy="132" r="4" fill="#7DD3FC" />
-      <circle cx="178" cy="132" r="4" fill="#7DD3FC" />
-      <rect x="66" y="122" width="68" height="18" rx="4" fill="#FFFFFF" />
+      <line x1="22" y1="132" x2="178" y2="132" stroke="#0284C7" strokeWidth="2" strokeDasharray="4 4" />
+      <circle cx="22" cy="132" r="4" fill="#38BDF8" stroke="#191A23" strokeWidth="1.2" />
+      <circle cx="178" cy="132" r="4" fill="#38BDF8" stroke="#191A23" strokeWidth="1.2" />
+      <rect x="66" y="122" width="68" height="18" rx="4" fill="#E0F2FE" stroke="#191A23" strokeWidth="1.2" />
       <text
         x="100"
         y="134"
         textAnchor="middle"
-        fill="#191A23"
+        fill="#0F172A"
         fontSize="8.5"
         fontWeight="800"
         fontFamily="monospace"

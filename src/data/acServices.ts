@@ -83,51 +83,7 @@ export const SERVICE_PACKAGES: ServicePackageSpec[] = [
   },
 ];
 
-export interface SparePartRateItem {
-  item: string;
-  specification: string;
-  priceDisplay: string;
-  warranty: string;
-}
 
-export const INSPECTION_AND_PARTS_RATES: SparePartRateItem[] = [
-  {
-    item: 'Standalone Diagnostic / Visit Fee',
-    specification: 'Waived (₹0) when you proceed with any service or repair; charged only if no work is taken after diagnosis',
-    priceDisplay: '₹249 (₹0 with service)',
-    warranty: 'N/A',
-  },
-  {
-    item: 'Compressor / Fan Run Capacitor',
-    specification: '35–55 mFD dual/single heavy-duty capacitor replacement',
-    priceDisplay: '₹450 – ₹750',
-    warranty: '90 Days',
-  },
-  {
-    item: 'Contactor Relay / Sensor Probe',
-    specification: 'Outdoor magnetic contactor or indoor room/coil NTC thermistor',
-    priceDisplay: '₹550 – ₹950',
-    warranty: '90 Days',
-  },
-  {
-    item: 'Inverter PCB Component-Level Repair',
-    specification: 'IPM module, power supply IC, relay & track restoration in lab',
-    priceDisplay: '₹1,499 – ₹3,499',
-    warranty: '90 Days',
-  },
-  {
-    item: 'Copper Piping Kit (With Insulation & Wire)',
-    specification: 'Heavy-gauge twin copper tubing + nitrile foam sleeve + 4-core cable',
-    priceDisplay: '₹380 / ft',
-    warranty: '90 Days',
-  },
-  {
-    item: 'Heavy-Duty Outdoor Wall Stand & Fasteners',
-    specification: 'Powder-coated MS angle bracket with anchor bolts',
-    priceDisplay: '₹750 / set',
-    warranty: '1 Year',
-  },
-];
 
 export const COMPATIBLE_AC_BRANDS: string[] = [
   'Daikin',
@@ -178,10 +134,10 @@ export const PROTOCOL_STEPS = [
   },
   {
     step: '06',
-    title: 'Final Wipe-Down & Service Warranty',
-    metric: '30 to 90 Days Service Coverage',
+    title: 'Final Wipe-Down & Performance Check',
+    metric: 'Workmanship Verification',
     description:
-      'We wipe down the AC panel, test louver and remote operation with you, and provide a clear 30-to-90-day post-service workmanship warranty.',
+      'We wipe down the AC panel, test louver and remote operation with you, and confirm cooling satisfaction before departure.',
   },
 ];
 
@@ -281,7 +237,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: 'Do you charge extra for spare parts or gas top-up?',
     answer:
-      'Base cleaning packages cover labor and jet-wash consumables. If your AC requires refrigerant gas charging or a replacement part (such as a capacitor, sensor, contactor, or copper pipe), the technician shares a transparent price from our published rate card before starting work. No work is done without your approval.',
+      'Base cleaning packages cover labor and jet-wash consumables. If your AC requires refrigerant gas charging or a replacement part (such as a capacitor, sensor, contactor, or copper pipe), the technician shares a clear upfront quote before starting work. No work is done without your approval.',
   },
   {
     question: 'What warranty do you provide on AC servicing and repairs?',
@@ -291,7 +247,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: 'Which AC brands and types do you service?',
     answer:
-      'As an independent multi-brand AC service provider, we service all major residential and commercial Split, Window, Inverter, and Cassette ACs—including Daikin, LG, Voltas, Blue Star, Carrier, Hitachi, Panasonic, Mitsubishi, O General, Lloyd, and Samsung.',
+      'As an independent multi-brand AC service provider, we service all major residential and commercial Split, Window, Inverter, and Cassette ACs—including Daikin, LG, Voltas, Blue Star, Hitachi, Lloyd, Samsung, and Godrej.',
   },
   {
     question: 'What are your operating hours and how do I pay?',

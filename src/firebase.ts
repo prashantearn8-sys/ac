@@ -87,25 +87,6 @@ function patchFirebaseAuthPopupResolver(authInstance: unknown) {
 }
 patchFirebaseAuthPopupResolver(auth);
 
-// Initialize Firebase App Check when reCAPTCHA v3 site key is configured
-const recaptchaSiteKey =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RECAPTCHA_SITE_KEY) ||
-  firebaseConfig.recaptchaSiteKey ||
-  '';
-
-if (typeof window !== 'undefined' && recaptchaSiteKey.trim().length > 0) {
-  import('firebase/app-check')
-    .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
-      initializeAppCheck(app, {
-        provider: new ReCaptchaV3Provider(recaptchaSiteKey.trim()),
-        isTokenAutoRefreshEnabled: true,
-      });
-    })
-    .catch(() => {
-      // App Check already initialized or environment unsupported
-    });
-}
-
 // Validate Connection to Firestore on boot
 async function testConnection() {
   try {
@@ -373,13 +354,13 @@ export async function createReviewInFirestore(
     throw new Error('Please write at least 5 characters in your review.');
   }
 
-  const autoApproved = Boolean(user && user.emailVerified && isAdminEmail(user.email));
+  const isVerifiedGoogleUser = Boolean(user && user.emailVerified);
 
   const payload = {
-    authorId: user ? user.uid : 'guest',
+    authorId: isVerifiedGoogleUser && user ? user.uid : 'guest',
     authorName: cleanName,
-    isVerifiedUser: Boolean(user && user.emailVerified),
-    approved: autoApproved,
+    isVerifiedUser: isVerifiedGoogleUser,
+    approved: true,
     rating: safeRating,
     serviceUsed: input.serviceUsed.slice(0, 80),
     locality: cleanLocality,
@@ -389,7 +370,7 @@ export async function createReviewInFirestore(
 
   try {
     await setDoc(doc(db, 'reviews', reviewId), payload);
-    return { id: reviewId, approved: autoApproved };
+    return { id: reviewId, approved: true };
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
   }

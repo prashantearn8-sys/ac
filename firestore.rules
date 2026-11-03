@@ -185,7 +185,7 @@ service cloud.firestore {
         (existing().userId == request.auth.uid || isAdmin());
     }
 
-    // 6. Collection Rules: /reviews/{reviewId} (Moderated Reviews: Public reads only approved == true)
+    // 6. Collection Rules: /reviews/{reviewId} (Customer Reviews: Verified Google Users & Guests; Admin-only delete)
     match /reviews/{reviewId} {
       allow get: if isValidId(reviewId) && (existing().approved == true || isAdmin());
       allow list: if existing().approved == true || isAdmin();
@@ -193,8 +193,8 @@ service cloud.firestore {
       allow create: if isValidId(reviewId) &&
         isValidReview(incoming()) &&
         incoming().createdAt == request.time &&
-        incoming().approved == isAdmin() && (
-          (isSignedIn() && incoming().authorId == request.auth.uid && incoming().isVerifiedUser == (request.auth.token.email_verified == true)) ||
+        incoming().approved == true && (
+          (isVerifiedUser() && incoming().authorId == request.auth.uid && incoming().isVerifiedUser == true) ||
           (!isSignedIn() && incoming().authorId == 'guest' && incoming().isVerifiedUser == false)
         );
 
@@ -207,10 +207,8 @@ service cloud.firestore {
         incoming().diff(existing()).affectedKeys().hasOnly(['approved']);
 
       allow delete: if isVerifiedUser() &&
-        isValidId(reviewId) && (
-          isAdmin() ||
-          (existing().authorId != 'guest' && existing().authorId == request.auth.uid)
-        );
+        isValidId(reviewId) &&
+        isAdmin();
     }
   }
 }

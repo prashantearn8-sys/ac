@@ -122,12 +122,12 @@
     },
     "CustomerReview": {
       "title": "CustomerReview",
-      "description": "Moderated customer review and star rating submitted by a signed-in user or guest customer.",
+      "description": "Customer review and star rating submitted by a Verified Google User or a Guest.",
       "type": "object",
       "properties": {
         "authorId": {
           "type": "string",
-          "description": "Firebase Auth UID of the reviewer, or 'guest' when submitted without sign-in.",
+          "description": "Firebase Auth UID of the Verified Google User, or 'guest' when submitted by a Guest.",
           "minLength": 1,
           "maxLength": 128
         },
@@ -139,11 +139,11 @@
         },
         "isVerifiedUser": {
           "type": "boolean",
-          "description": "True if submitted by a Google-authenticated user with verified email, false for guest submissions."
+          "description": "True if submitted by a Verified Google User (white review card), false for Guest submissions (dark navy blue review card)."
         },
         "approved": {
           "type": "boolean",
-          "description": "Moderation flag. Only reviews with approved == true are publicly readable."
+          "description": "Publication flag (true for published reviews)."
         },
         "rating": {
           "type": "number",
@@ -203,7 +203,7 @@
       "schema": {
         "$ref": "#/entities/CustomerReview"
       },
-      "description": "Stores moderated customer reviews. Public visitors can only read approved reviews; admins can read, approve, or delete all reviews."
+      "description": "Stores customer reviews from Verified Google Users and Guests. Publicly readable when approved == true; only admins can delete or update reviews."
     }
   }
 }

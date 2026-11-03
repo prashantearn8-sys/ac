@@ -1,6 +1,4 @@
-import nodemailer from 'nodemailer';
-
-const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || 'coolbrosacservice@gmail.com';
+const DISPATCH_EMAIL = 'coolbrosacservice@gmail.com';
 
 // Simple in-memory IP rate limiter: max 5 requests per 10 minutes per IP
 const rateLimitMap = new Map();
@@ -98,41 +96,10 @@ export async function processSendEmailRequest(rawBody, clientIp = 'unknown') {
     `\n----------------------------------------`,
   ].join('\n');
 
-  // 1. Direct SMTP delivery when configured
-  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: Number(process.env.SMTP_PORT) === 465,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"Cool Bros AC Website" <${process.env.SMTP_USER}>`,
-      to: NOTIFY_EMAIL,
-      // Never set unvalidated attacker-controlled replyTo
-      replyTo: isValidEmailAddress(senderEmail) ? senderEmail : undefined,
-      subject: emailSubject,
-      text: textBody,
-    });
-
-    return {
-      statusCode: 200,
-      payload: {
-        ok: true,
-        method: 'smtp',
-        recipient: NOTIFY_EMAIL,
-      },
-    };
-  }
-
-  // 2. FormSubmit AJAX Relay
+  // FormSubmit AJAX Relay
   try {
     const relayResponse = await fetch(
-      `https://formsubmit.co/ajax/${encodeURIComponent(NOTIFY_EMAIL)}`,
+      `https://formsubmit.co/ajax/${encodeURIComponent(DISPATCH_EMAIL)}`,
       {
         method: 'POST',
         headers: {
@@ -158,7 +125,7 @@ export async function processSendEmailRequest(rawBody, clientIp = 'unknown') {
         payload: {
           ok: true,
           method: 'formsubmit-relay',
-          recipient: NOTIFY_EMAIL,
+          recipient: DISPATCH_EMAIL,
         },
       };
     }
