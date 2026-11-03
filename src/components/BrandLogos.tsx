@@ -153,33 +153,6 @@ export const BrandLogoSvg: React.FC<{ brandId: string; className?: string }> = (
         </svg>
       );
 
-    case 'carrier':
-      return (
-        <svg
-          viewBox="0 0 110 28"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={className}
-          aria-label="Carrier"
-        >
-          {/* Carrier Iconic Oval Ring Stroke */}
-          <ellipse cx="55" cy="14" rx="51" ry="11.5" stroke="#003882" strokeWidth="2.2" />
-          <text
-            x="55"
-            y="19"
-            textAnchor="middle"
-            fill="#003882"
-            fontFamily="Georgia, serif"
-            fontStyle="italic"
-            fontWeight="bold"
-            fontSize="14.5"
-            letterSpacing="0.02em"
-          >
-            Carrier
-          </text>
-        </svg>
-      );
-
     case 'hitachi':
       return (
         <svg
@@ -210,100 +183,6 @@ export const BrandLogoSvg: React.FC<{ brandId: string; className?: string }> = (
             letterSpacing="0.04em"
           >
             Inspire the Next
-          </text>
-        </svg>
-      );
-
-    case 'panasonic':
-      return (
-        <svg
-          viewBox="0 0 120 28"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={className}
-          aria-label="Panasonic"
-        >
-          <text
-            x="2"
-            y="20"
-            fill="#004098"
-            fontFamily="system-ui, -apple-system, sans-serif"
-            fontWeight="800"
-            fontSize="15"
-            letterSpacing="0.04em"
-          >
-            Panasonic
-          </text>
-        </svg>
-      );
-
-    case 'mitsubishi':
-      return (
-        <svg
-          viewBox="0 0 145 28"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={className}
-          aria-label="Mitsubishi Electric"
-        >
-          {/* Mitsubishi Three Diamonds */}
-          <g fill="#ED1C24">
-            {/* Top Diamond */}
-            <polygon points="12,2 17,10 12,18 7,10" />
-            {/* Bottom Left Diamond */}
-            <polygon points="4,16 9,24 4,32 -1,24" transform="translate(1, -7)" />
-            {/* Bottom Right Diamond */}
-            <polygon points="18,16 23,24 18,32 13,24" transform="translate(1, -7)" />
-          </g>
-          {/* Wordmark */}
-          <text
-            x="28"
-            y="14"
-            fill="#191A23"
-            fontFamily="system-ui, -apple-system, sans-serif"
-            fontWeight="800"
-            fontSize="9"
-            letterSpacing="0.05em"
-          >
-            MITSUBISHI
-          </text>
-          <text
-            x="28"
-            y="23"
-            fill="#ED1C24"
-            fontFamily="system-ui, -apple-system, sans-serif"
-            fontWeight="800"
-            fontSize="8"
-            letterSpacing="0.06em"
-          >
-            ELECTRIC
-          </text>
-        </svg>
-      );
-
-    case 'ogeneral':
-      return (
-        <svg
-          viewBox="0 0 120 28"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={className}
-          aria-label="O General"
-        >
-          {/* Red circle with white inner ring */}
-          <circle cx="14" cy="14" r="11" fill="#E21836" />
-          <circle cx="14" cy="14" r="7" fill="#FFFFFF" />
-          <circle cx="14" cy="14" r="4" fill="#E21836" />
-          <text
-            x="30"
-            y="19"
-            fill="#E21836"
-            fontFamily="system-ui, -apple-system, sans-serif"
-            fontWeight="900"
-            fontSize="12.5"
-            letterSpacing="0.05em"
-          >
-            O GENERAL
           </text>
         </svg>
       );

@@ -40,10 +40,8 @@ import {
   signOutUser,
 } from './firebase';
 import {
-  AREA_LIST,
   AreaSlug,
   buildWhatsAppUrl,
-  COMPATIBLE_AC_BRANDS,
   CONTACT_PHONE_DISPLAY,
   CONTACT_PHONE_HREF,
   OPERATING_HOURS,
@@ -248,6 +246,7 @@ export default function App() {
   const [msgLocation, setMsgLocation] = useState('');
   const [msgBody, setMsgBody] = useState('');
   const [msgHoneypot, setMsgHoneypot] = useState('');
+  const [msgFeedback, setMsgFeedback] = useState<string | null>(null);
 
   // Sync with browser Back/Forward navigation
   useEffect(() => {
@@ -260,6 +259,50 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Dynamic SEO Title, Meta Description, OpenGraph, Twitter Card & Canonical URL Sync
+  useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
+    const currentArea = activeAreaSlug ? SERVICE_AREAS[activeAreaSlug] : null;
+    const currentLegal = activeLegalPage
+      ? LEGAL_PAGE_TABS.find((t) => t.slug === activeLegalPage)
+      : null;
+
+    let pageTitle = 'Cool Bros AC Service – AC Repair & Jet Wash in Delhi NCR';
+    let pageDescription =
+      'Book doorstep 140 PSI foam jet AC service, R32/R410A gas charging, PCB repair, and AC installation across Delhi & Gurugram. Call +91 9560415262 today.';
+
+    if (activeAdminPage) {
+      pageTitle = 'Admin Dashboard – Cool Bros AC Service';
+      pageDescription =
+        'Authorized administrator dashboard for managing Cool Bros AC Service pricing, customer reviews, and service inquiries.';
+    } else if (currentLegal) {
+      pageTitle = `${currentLegal.label} – Cool Bros AC Service`;
+      pageDescription = `Read the official ${currentLegal.label} for Cool Bros AC Service doorstep air conditioner servicing and repair in Delhi & Gurugram.`;
+    } else if (currentArea) {
+      pageTitle = `${currentArea.title} – Cool Bros AC Service`;
+      pageDescription = `${currentArea.description} Call +91 9560415262 for same-day AC service in ${currentArea.shortName}.`;
+    }
+
+    document.title = pageTitle;
+
+    const setMetaContent = (selector: string, content: string) => {
+      const el = document.querySelector<HTMLMetaElement>(selector);
+      if (el) el.setAttribute('content', content);
+    };
+
+    const canonicalUrl = `${window.location.origin}${window.location.pathname}`;
+    const canonicalEl = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (canonicalEl) canonicalEl.setAttribute('href', canonicalUrl);
+
+    setMetaContent('meta[name="description"]', pageDescription);
+    setMetaContent('meta[property="og:title"]', pageTitle);
+    setMetaContent('meta[property="og:description"]', pageDescription);
+    setMetaContent('meta[property="og:url"]', canonicalUrl);
+    setMetaContent('meta[name="twitter:title"]', pageTitle);
+    setMetaContent('meta[name="twitter:description"]', pageDescription);
+  }, [activeAdminPage, activeLegalPage, activeAreaSlug]);
 
   const pushPath = (path: string) => {
     if (typeof window !== 'undefined' && window.location.pathname !== path) {
@@ -281,15 +324,6 @@ export default function App() {
     setActiveAdminPage(true);
     setProfileMenuOpen(false);
     pushPath('/admin');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const openAreaPage = (slug: AreaSlug) => {
-    setActiveAdminPage(false);
-    setActiveLegalPage(null);
-    setActiveAreaSlug(slug);
-    setMsgLocation(SERVICE_AREAS[slug].shortName);
-    pushPath(`/${slug}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -574,6 +608,11 @@ export default function App() {
     if (defaultUnit) {
       setMsgAcDetails(defaultUnit);
     }
+    setMsgFeedback('Requirement filled! Enter your name below and click Send on WhatsApp.');
+    setTimeout(() => {
+      const targetId = msgName.trim().length >= 2 ? 'msg-body-textarea' : 'msg-name-input';
+      document.getElementById(targetId)?.focus();
+    }, 50);
   };
 
   const handleWhatsAppFormSubmit = (e: React.FormEvent) => {
@@ -616,13 +655,21 @@ export default function App() {
       _gotcha: msgHoneypot,
     }).catch(() => {});
 
-    window.location.href = currentMessageWhatsAppUrl;
+    setMsgFeedback('Opening WhatsApp with your inquiry details...');
+
+    const link = document.createElement('a');
+    link.href = currentMessageWhatsAppUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const activeArea = activeAreaSlug ? SERVICE_AREAS[activeAreaSlug] : null;
 
   return (
-    <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion="never">
       <div className="min-h-screen flex flex-col bg-white text-[#191A23] selection:bg-[#7DD3FC] selection:text-[#191A23]">
         {/* Accessibility Skip Link */}
         <a
@@ -648,8 +695,8 @@ export default function App() {
               <span className="hidden sm:inline group-hover:text-[#0284C7] transition-colors">
                 Cool Bros AC Service
               </span>
-              <span className="sm:hidden group-hover:text-[#0284C7] transition-colors">
-                Cool Bros AC
+              <span className="sm:hidden text-sm group-hover:text-[#0284C7] transition-colors">
+                Cool Bros AC Service
               </span>
             </a>
 
@@ -992,6 +1039,10 @@ export default function App() {
                         <div className="pt-1 sm:pt-2 grid grid-cols-1 landscape:flex landscape:flex-row sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-4 phone-landscape-hero-cta-wrap">
                           <a
                             href="#send-message"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigateHomeSection('send-message');
+                            }}
                             className="inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 sm:py-4 min-h-[42px] sm:min-h-[50px] text-xs sm:text-sm font-semibold text-white bg-[#0F172A] border-2 border-[#191A23] rounded-2xl hover:bg-[#0284C7] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] phone-landscape-hero-btn"
                           >
                             <span>Book AC Service</span>
@@ -1052,20 +1103,29 @@ export default function App() {
                       {/* Brand Logo Grid: Clean borderless logos, B&W by default, Colourful on cursor hover */}
                       <div className="grid grid-cols-4 md:grid-cols-8 gap-x-4 gap-y-3 sm:gap-x-6 sm:gap-y-4 items-center">
                         {BRAND_LIST.map((brand, idx) => (
-                          <motion.div
+                          <motion.button
                             key={brand.id}
+                            type="button"
                             initial={{ opacity: 0, y: 10 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.3, delay: idx * 0.04 }}
-                            className="group flex items-center justify-center py-1 transition-all duration-300 cursor-pointer"
-                            title={`We service and repair ${brand.name} Air Conditioners`}
-                            aria-label={`${brand.name} AC Service & Repair`}
+                            onClick={() => {
+                              handleQuickTemplateSelect(
+                                'General AC Inquiry',
+                                `I need doorstep AC service / checkup for my ${brand.name} AC unit. Please share today/tomorrow slot availability.`,
+                                'Split AC (1 Unit)'
+                              );
+                              navigateHomeSection('send-message');
+                            }}
+                            className="group flex items-center justify-center py-1 transition-all duration-300 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] rounded-lg"
+                            title={`Book ${brand.name} AC Service & Repair`}
+                            aria-label={`Book ${brand.name} AC Service & Repair`}
                           >
                             <div className="filter grayscale contrast-125 opacity-55 group-hover:grayscale-0 group-hover:contrast-100 group-hover:opacity-100 group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300 ease-out flex items-center justify-center">
                               <BrandLogoSvg brandId={brand.id} className="h-5 sm:h-6 w-auto max-w-[105px] select-none" />
                             </div>
-                          </motion.div>
+                          </motion.button>
                         ))}
                       </div>
                     </div>
@@ -1190,24 +1250,24 @@ export default function App() {
                 </section>
 
                 {/* SECTION 02: COMPACT "OUR WORKING PROCESS" */}
-                <section id="protocol" className="scroll-mt-16 py-10 sm:py-14">
+                <section id="protocol" className="scroll-mt-16 py-6 sm:py-14">
                   <div className="w-full px-3 sm:px-4 lg:px-6">
                     <motion.div
                       initial={{ opacity: 0, y: 14 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.35 }}
-                      className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-5 sm:pb-6"
+                      className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-3 pb-3 sm:pb-6"
                     >
-                      <div className="space-y-1.5">
-                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-[#0F172A]">
+                      <div className="space-y-1 sm:space-y-1.5">
+                        <h2 className="text-lg sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-[#0F172A]">
                           Our Working Process
                         </h2>
-                        <div className="h-1.5 w-16 rounded-full bg-gradient-to-r from-[#0284C7] to-[#38BDF8]" />
+                        <div className="h-1 sm:h-1.5 w-12 sm:w-16 rounded-full bg-gradient-to-r from-[#0284C7] to-[#38BDF8]" />
                       </div>
                     </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 items-start">
                       {PROTOCOL_STEPS.map((st, index) => {
                         const isOpen = openStepIndex === index;
                         const panelId = `protocol-panel-${st.step}`;
@@ -1219,7 +1279,7 @@ export default function App() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.3, delay: index * 0.04 }}
                             whileHover={{ y: -2 }}
-                            className={`border-2 border-[#191A23] rounded-2xl overflow-hidden transition-all duration-200 ${
+                            className={`border sm:border-2 border-[#191A23] rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-200 ${
                               isOpen
                                 ? 'bg-gradient-to-r from-[#E0F2FE] via-[#F0F9FF] to-[#E0F2FE]'
                                 : 'bg-white hover:bg-[#F8FAFC]'
@@ -1230,33 +1290,33 @@ export default function App() {
                               aria-expanded={isOpen}
                               aria-controls={panelId}
                               onClick={() => setOpenStepIndex(isOpen ? -1 : index)}
-                              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between gap-2.5 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                              className="w-full px-2.5 sm:px-5 py-2 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-2.5 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                             >
-                              <div className="flex items-center gap-3 min-w-0">
-                                <span className="px-2.5 py-1 rounded-lg bg-gradient-to-br from-[#7DD3FC] to-[#38BDF8] border border-[#191A23] text-xs sm:text-sm font-mono font-bold text-[#0F172A] tabular-nums shrink-0">
+                              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-gradient-to-br from-[#7DD3FC] to-[#38BDF8] border border-[#191A23] text-[10px] sm:text-sm font-mono font-bold text-[#0F172A] tabular-nums shrink-0">
                                   {st.step}
                                 </span>
                                 <div className="min-w-0">
-                                  <h3 className="text-sm sm:text-base font-display font-bold text-[#0F172A] leading-snug truncate">
+                                  <h3 className="text-xs sm:text-base font-display font-bold text-[#0F172A] leading-tight sm:leading-snug truncate">
                                     {st.title}
                                   </h3>
-                                  <span className="block text-xs font-mono text-[#0284C7] font-semibold">
+                                  <span className="block text-[10px] sm:text-xs font-mono text-[#0284C7] font-semibold leading-tight">
                                     {st.metric}
                                   </span>
                                 </div>
                               </div>
 
                               <span
-                                className={`w-8 h-8 rounded-lg border border-[#191A23] flex items-center justify-center shrink-0 transition-all duration-300 ${
+                                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg border border-[#191A23] flex items-center justify-center shrink-0 transition-all duration-300 ${
                                   isOpen
                                     ? 'bg-[#0F172A] text-[#7DD3FC] rotate-180'
                                     : 'bg-[#F8FAFC] text-[#191A23]'
                                 }`}
                               >
                                 {isOpen ? (
-                                  <Minus className="w-4 h-4" aria-hidden="true" />
+                                  <Minus className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
                                 ) : (
-                                  <Plus className="w-4 h-4" aria-hidden="true" />
+                                  <Plus className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
                                 )}
                               </span>
                             </button>
@@ -1271,7 +1331,7 @@ export default function App() {
                                   transition={{ duration: 0.22 }}
                                   className="overflow-hidden"
                                 >
-                                  <div className="px-4 sm:px-5 pb-3.5 pt-2.5 border-t border-[#191A23]/15 bg-white text-xs sm:text-sm text-[#191A23] leading-relaxed">
+                                  <div className="px-2.5 sm:px-5 pb-2.5 sm:pb-3.5 pt-2 sm:pt-2.5 border-t border-[#191A23]/15 bg-white text-[11px] sm:text-sm text-[#191A23] leading-snug sm:leading-relaxed">
                                     {st.description}
                                   </div>
                                 </motion.div>
@@ -1898,6 +1958,16 @@ export default function App() {
                               </button>
                             </div>
                           </div>
+
+                          {msgFeedback && (
+                            <div
+                              role="status"
+                              aria-live="polite"
+                              className="p-3 rounded-xl bg-[#E0F2FE] border border-[#0284C7] text-xs font-semibold text-[#0F172A]"
+                            >
+                              {msgFeedback}
+                            </div>
+                          )}
 
                           <form onSubmit={handleWhatsAppFormSubmit} className="space-y-4">
                             {/* Anti-Bot Honeypot Field (Hidden from real users) */}

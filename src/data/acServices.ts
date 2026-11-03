@@ -83,19 +83,6 @@ export const SERVICE_PACKAGES: ServicePackageSpec[] = [
   },
 ];
 
-
-
-export const COMPATIBLE_AC_BRANDS: string[] = [
-  'Daikin',
-  'LG',
-  'Voltas',
-  'Blue Star',
-  'Hitachi',
-  'Lloyd',
-  'Samsung',
-  'Godrej',
-];
-
 export const PROTOCOL_STEPS = [
   {
     step: '01',
@@ -215,43 +202,3 @@ export const SERVICE_AREAS: Record<AreaSlug, ServiceAreaSpec> = {
       'Same-day foam power jet wash, anti-rust condenser coating, gas charging, and core-drilled split AC installation for gated townships along Sohna Road and Golf Course Extension Road.',
   },
 };
-
-export const AREA_LIST: ServiceAreaSpec[] = Object.values(SERVICE_AREAS);
-
-export interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-export const FAQ_ITEMS: FaqItem[] = [
-  {
-    question: 'What is included in the ₹599 Foam Power Jet AC Service?',
-    answer:
-      'Our ₹599 per-unit Foam Power Jet Service covers complete indoor evaporator coil foaming, 140 PSI regulated hydro-jet washing inside a 360° waterproof catchment jacket, condensate drain tray and pipe pressure-flushing, outdoor condenser jet washing, and a final cooling + ampere check. All taxes are included.',
-  },
-  {
-    question: 'Is there an inspection fee if I only want my AC checked?',
-    answer:
-      'If you proceed with any service package or approve our repair quote, the inspection fee is ₹0 (completely waived). If our technician visits, performs a full clamp-meter and pressure fault diagnosis, and you decide not to take any service or repair, a flat ₹249 standalone inspection fee applies.',
-  },
-  {
-    question: 'Do you charge extra for spare parts or gas top-up?',
-    answer:
-      'Base cleaning packages cover labor and jet-wash consumables. If your AC requires refrigerant gas charging or a replacement part (such as a capacitor, sensor, contactor, or copper pipe), the technician shares a clear upfront quote before starting work. No work is done without your approval.',
-  },
-  {
-    question: 'What warranty do you provide on AC servicing and repairs?',
-    answer:
-      'We provide a 30-day workmanship warranty on Foam Power Jet Service and AC Installations, a 45-day warranty on Anti-Rust Chemical Wash, and a 90-day warranty on Refrigerant Gas Charging, Leak Brazing, and Inverter PCB / Spare Part replacements.',
-  },
-  {
-    question: 'Which AC brands and types do you service?',
-    answer:
-      'As an independent multi-brand AC service provider, we service all major residential and commercial Split, Window, Inverter, and Cassette ACs—including Daikin, LG, Voltas, Blue Star, Hitachi, Lloyd, Samsung, and Godrej.',
-  },
-  {
-    question: 'What are your operating hours and how do I pay?',
-    answer:
-      'Our technicians operate 7 days a week from 08:00 AM to 09:00 PM across Delhi and Gurugram. You pay only after the job is completed and tested at your premises via UPI, cash, or bank transfer.',
-  },
-];
