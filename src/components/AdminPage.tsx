@@ -26,7 +26,6 @@ import {
   isAdminEmail,
   OperationType,
   saveServiceInFirestore,
-  setReviewApprovalInFirestore,
 } from '../firebase';
 import { ServiceCardIllustration } from './AcGraphics';
 
@@ -286,24 +285,6 @@ export function AdminPage({
     }
   };
 
-  const handleToggleApproveReview = async (rev: CustomerReviewRecord) => {
-    setFeedback(null);
-    try {
-      await setReviewApprovalInFirestore(rev.id, !rev.approved);
-      setFeedback({
-        type: 'success',
-        text: !rev.approved
-          ? `Approved review by ${rev.authorName} — it is now live on the website.`
-          : `Unpublished review by ${rev.authorName}.`,
-      });
-    } catch (err) {
-      setFeedback({
-        type: 'error',
-        text: err instanceof Error ? err.message : 'Failed to update review status.',
-      });
-    }
-  };
-
   const handleConfirmDeleteReview = async (reviewId: string) => {
     setFeedback(null);
     setConfirmReviewDeleteId(null);
@@ -361,7 +342,7 @@ export function AdminPage({
               </h1>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#7DD3FC] text-[#191A23] border border-[#191A23]">
                 <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Pricing · Reviews Moderation · Inquiries</span>
+                <span>Pricing · Reviews · Inquiries</span>
               </span>
             </div>
           </div>
@@ -386,7 +367,7 @@ export function AdminPage({
               <p className="text-sm text-[#191A23]/75 leading-relaxed">
                 Sign in with the authorized administrator Google account (
                 <strong className="text-[#191A23] font-mono">{ADMIN_EMAIL}</strong>) to update
-                service pricing, approve customer reviews, or view inquiry logs.
+                service pricing, delete customer reviews, or view inquiry logs.
               </p>
               {user?.email && (
                 <p
@@ -784,16 +765,6 @@ export function AdminPage({
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          {!rev.id.startsWith('featured-') && !rev.approved && (
-                            <button
-                              type="button"
-                              onClick={() => handleToggleApproveReview(rev)}
-                              className="px-3.5 py-2 min-h-[38px] rounded-xl border border-[#191A23] text-xs font-bold bg-[#86EFAC] text-[#191A23] hover:bg-[#4ADE80] cursor-pointer"
-                            >
-                              Approve &amp; Publish
-                            </button>
-                          )}
-
                           {!isConfirmingDel ? (
                             <button
                               type="button"

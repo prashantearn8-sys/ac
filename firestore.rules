@@ -185,26 +185,18 @@ service cloud.firestore {
         (existing().userId == request.auth.uid || isAdmin());
     }
 
-    // 6. Collection Rules: /reviews/{reviewId} (Customer Reviews: Verified Google Users & Guests; Admin-only delete)
+    // 6. Collection Rules: /reviews/{reviewId} (Auto-approved & published; Admin-only delete)
     match /reviews/{reviewId} {
-      allow get: if isValidId(reviewId) && (existing().approved == true || isAdmin());
-      allow list: if existing().approved == true || isAdmin();
+      allow get: if isValidId(reviewId);
+      allow list: if true;
 
       allow create: if isValidId(reviewId) &&
         isValidReview(incoming()) &&
         incoming().createdAt == request.time &&
         incoming().approved == true && (
           (isVerifiedUser() && incoming().authorId == request.auth.uid && incoming().isVerifiedUser == true) ||
-          (!isSignedIn() && incoming().authorId == 'guest' && incoming().isVerifiedUser == false)
+          (incoming().authorId == 'guest' && incoming().isVerifiedUser == false)
         );
-
-      allow update: if isVerifiedUser() &&
-        isValidId(reviewId) &&
-        isValidReview(incoming()) &&
-        isAdmin() &&
-        incoming().authorId == existing().authorId &&
-        incoming().createdAt == existing().createdAt &&
-        incoming().diff(existing()).affectedKeys().hasOnly(['approved']);
 
       allow delete: if isVerifiedUser() &&
         isValidId(reviewId) &&

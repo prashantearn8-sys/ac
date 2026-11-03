@@ -5,7 +5,7 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { collection, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { collection, limit, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import {
   Phone,
@@ -217,7 +217,7 @@ export default function App() {
   const [revName, setRevName] = useState('');
   const [revLocality, setRevLocality] = useState('');
   const [revService, setRevService] = useState<ServiceType>('Foam Power Jet Service');
-  const [revRating, setRevRating] = useState<number>(5);
+  const [revRating, setRevRating] = useState<number>(0);
   const [revHoverRating, setRevHoverRating] = useState<number | null>(null);
   const [revText, setRevText] = useState('');
   const [revSubmitting, setRevSubmitting] = useState(false);
@@ -355,11 +355,10 @@ export default function App() {
     return () => unsubServices();
   }, []);
 
-  // Listen to Approved Public Customer Reviews in Firestore (Capped at limit(20) + ordered by createdAt)
+  // Listen to Auto-Approved Public Customer Reviews in Firestore (Capped at limit(20) + ordered by createdAt)
   useEffect(() => {
     const reviewsQuery = query(
       collection(db, 'reviews'),
-      where('approved', '==', true),
       orderBy('createdAt', 'desc'),
       limit(20)
     );
@@ -476,12 +475,21 @@ export default function App() {
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRevFeedback(null);
+
+    if (revRating < 1 || revRating > 5) {
+      setRevFeedback({
+        type: 'error',
+        text: 'Please click on a star rating (1 to 5 stars) before submitting.',
+      });
+      return;
+    }
+
     setRevSubmitting(true);
 
     try {
       const reviewerName =
         revName.trim() || user?.displayName || user?.email?.split('@')[0] || '';
-      const result = await createReviewInFirestore({
+      await createReviewInFirestore({
         authorName: reviewerName,
         rating: revRating,
         serviceUsed: revService,
@@ -491,12 +499,10 @@ export default function App() {
 
       setRevFeedback({
         type: 'success',
-        text: result.approved
-          ? 'Thank you! Your review has been published live.'
-          : 'Thank you! Your review has been submitted.',
+        text: 'Thank you! Your review has been auto-approved and published live.',
       });
       setRevText('');
-      setRevRating(5);
+      setRevRating(0);
       setReviewFilterRating('all');
       setReviewPage(1);
     } catch (err) {
@@ -725,7 +731,7 @@ export default function App() {
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center p-2 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-bold text-[#191A23] bg-[#86EFAC] border border-[#191A23] rounded-xl hover:bg-[#4ADE80] hover:-translate-y-0.5 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                className="inline-flex items-center justify-center p-2 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-bold text-[#191A23] bg-[#86EFAC] border border-gray-400 rounded-xl hover:bg-[#4ADE80] hover:-translate-y-0.5 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                 title={`WhatsApp ${CONTACT_PHONE_DISPLAY}`}
                 aria-label={`WhatsApp ${CONTACT_PHONE_DISPLAY}`}
               >
@@ -747,7 +753,7 @@ export default function App() {
                     aria-haspopup="true"
                     title={user.displayName || user.email || 'Account'}
                     aria-label="User account menu"
-                    className="group inline-flex items-center justify-center p-1 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] hover:-translate-y-0.5 transition-all duration-150 shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                    className="group inline-flex items-center justify-center p-1 min-w-[36px] sm:min-w-[38px] min-h-[36px] sm:min-h-[38px] text-xs font-semibold text-[#191A23] bg-white border border-gray-400 rounded-xl hover:bg-[#7DD3FC] hover:-translate-y-0.5 transition-all duration-150 shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                   >
                     {user.photoURL && !avatarImgError ? (
                       <img
@@ -755,7 +761,7 @@ export default function App() {
                         alt={user.displayName || user.email || 'User profile'}
                         referrerPolicy="no-referrer"
                         onError={() => setAvatarImgError(true)}
-                        className="w-6 h-6 rounded-full object-cover border border-[#191A23] shrink-0"
+                        className="w-6 h-6 rounded-full object-cover shrink-0"
                       />
                     ) : (
                       <div className="w-6 h-6 rounded-full bg-[#0F172A] text-[#7DD3FC] flex items-center justify-center text-xs font-bold uppercase shrink-0">
@@ -828,7 +834,7 @@ export default function App() {
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={isSigningIn}
-                  className="group inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 min-h-[36px] sm:min-h-[38px] text-xs font-semibold text-[#191A23] bg-white border border-[#191A23] rounded-xl hover:bg-[#7DD3FC] hover:-translate-y-0.5 disabled:opacity-60 transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                  className="group inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 min-h-[36px] sm:min-h-[38px] text-xs font-semibold text-[#191A23] bg-white border border-gray-400 rounded-xl hover:bg-[#7DD3FC] hover:-translate-y-0.5 disabled:opacity-60 transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                 >
                   <svg
                     className="w-3.5 h-3.5 shrink-0"
@@ -997,7 +1003,7 @@ export default function App() {
                             )}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 min-h-[42px] sm:min-h-[50px] text-xs sm:text-sm font-bold text-[#191A23] bg-[#86EFAC] border-2 border-[#191A23] rounded-2xl hover:bg-[#4ADE80] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] phone-landscape-hero-btn"
+                            className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 min-h-[42px] sm:min-h-[50px] text-xs sm:text-sm font-bold text-[#191A23] bg-[#86EFAC] border-2 border-gray-400 rounded-2xl hover:bg-[#4ADE80] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23] phone-landscape-hero-btn"
                           >
                             <MessageCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
                             <span>WhatsApp Us</span>
@@ -1029,7 +1035,7 @@ export default function App() {
                         initial={{ opacity: 0, scale: 0.94, y: 12 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                        className="order-1 landscape:order-2 md:order-2 landscape:col-span-5 md:col-span-6 flex justify-center landscape:justify-end md:justify-end items-center phone-landscape-hero-illustration"
+                        className="order-1 landscape:order-2 md:order-2 landscape:col-span-5 md:col-span-6 flex justify-center landscape:justify-end md:justify-center items-center phone-landscape-hero-illustration"
                       >
                         <HeroCoolingIllustration />
                       </motion.div>
@@ -1069,26 +1075,26 @@ export default function App() {
                 {/* SECTION 01: SERVICES & TRANSPARENT RATE CARD */}
                 <section
                   id="services"
-                  className="scroll-mt-16 py-12 sm:py-16 lg:py-24 bg-gradient-to-b from-[#F0F9FF]/80 via-[#F8FAFC] to-[#F0F9FF]/60 border-y-2 border-[#191A23]/15"
+                  className="scroll-mt-16 py-8 sm:py-12 bg-gradient-to-b from-[#F0F9FF]/80 via-[#F8FAFC] to-[#F0F9FF]/60 border-y-2 border-[#191A23]/15"
                 >
-                  <div className="w-full px-3 sm:px-4 lg:px-6 space-y-12">
+                  <div className="w-full px-3 sm:px-4 lg:px-6 space-y-6 sm:space-y-8">
                     {/* "Services" Heading */}
                     <motion.div
-                      initial={{ opacity: 0, y: 16 }}
+                      initial={{ opacity: 0, y: 14 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.4 }}
-                      className="flex flex-col sm:flex-row sm:items-end justify-between gap-4"
+                      transition={{ duration: 0.35 }}
+                      className="flex flex-col sm:flex-row sm:items-end justify-between gap-3"
                     >
-                      <div className="space-y-2.5">
-                        <span className="inline-flex items-center text-xs font-mono font-bold uppercase tracking-[0.2em] text-[#0284C7]">
+                      <div className="space-y-1.5">
+                        <span className="inline-flex items-center text-[11px] font-mono font-bold uppercase tracking-[0.18em] text-[#0284C7]">
                           OUR AC SERVICES &amp; UPFRONT PRICING
                         </span>
-                        <div className="space-y-2">
-                          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-[#0F172A]">
+                        <div className="space-y-1.5">
+                          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-[#0F172A]">
                             Services
                           </h2>
-                          <div className="h-1.5 w-20 rounded-full bg-gradient-to-r from-[#0284C7] to-[#38BDF8]" />
+                          <div className="h-1.5 w-16 rounded-full bg-gradient-to-r from-[#0284C7] to-[#38BDF8]" />
                         </div>
                       </div>
 
@@ -1096,7 +1102,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={openAdminDashboard}
-                          className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0F172A] text-[#7DD3FC] border border-[#191A23] text-xs font-mono font-bold hover:bg-[#0284C7] hover:text-white transition-all cursor-pointer"
+                          className="self-start sm:self-auto inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0F172A] text-[#7DD3FC] border border-[#191A23] text-xs font-mono font-bold hover:bg-[#0284C7] hover:text-white transition-all cursor-pointer"
                         >
                           <ShieldCheck className="w-4 h-4" aria-hidden="true" />
                           <span>Edit Prices / Add Services</span>
@@ -1104,61 +1110,61 @@ export default function App() {
                       )}
                     </motion.div>
 
-                    {/* Service Cards Grid: Service Image + Name + Included Tagline + Clear Per-AC Price + Contact */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+                    {/* Compact Service Cards Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {displayServices.map((item, idx) => (
                         <motion.article
                           key={item.id}
-                          initial={{ opacity: 0, y: 20 }}
+                          initial={{ opacity: 0, y: 16 }}
                           whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true, margin: '-30px' }}
+                          viewport={{ once: true, margin: '-20px' }}
                           transition={{
-                            duration: 0.4,
-                            delay: idx * 0.06,
+                            duration: 0.35,
+                            delay: idx * 0.05,
                             ease: [0.16, 1, 0.3, 1],
                           }}
-                          whileHover={{ y: -6 }}
-                          className="group bg-white border-2 border-[#191A23] rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300"
+                          whileHover={{ y: -4 }}
+                          className="group bg-white border-2 border-[#191A23] rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300"
                         >
-                          {/* 1. Service Image */}
-                          <div className="bg-gradient-to-br from-[#E0F2FE]/75 via-[#F8FAFC] to-[#BAE6FD]/45 group-hover:from-[#BAE6FD]/75 group-hover:via-[#E0F2FE]/65 group-hover:to-[#7DD3FC]/40 border-b-2 border-[#191A23]/15 p-6 flex items-center justify-center h-48 transition-colors duration-300">
+                          {/* 1. Compact Service Image */}
+                          <div className="bg-gradient-to-br from-[#E0F2FE]/75 via-[#F8FAFC] to-[#BAE6FD]/45 group-hover:from-[#BAE6FD]/75 group-hover:via-[#E0F2FE]/65 group-hover:to-[#7DD3FC]/40 border-b-2 border-[#191A23]/15 p-3.5 flex items-center justify-center h-32 sm:h-36 transition-colors duration-300">
                             <ServiceCardIllustration index={item.iconIndex} />
                           </div>
 
                           {/* 2. Service Name, Included Deliverables Tagline, & Price + 3. Contact */}
-                          <div className="p-6 flex flex-col justify-between flex-1 gap-4">
-                            <div className="space-y-2.5">
-                              <div className="flex items-start justify-between gap-3">
-                                <h3 className="font-display font-bold text-lg sm:text-xl text-[#0F172A] group-hover:text-[#0284C7] transition-colors leading-snug">
+                          <div className="p-4 flex flex-col justify-between flex-1 gap-3">
+                            <div className="space-y-1.5">
+                              <div className="flex items-start justify-between gap-2.5">
+                                <h3 className="font-display font-bold text-base sm:text-lg text-[#0F172A] group-hover:text-[#0284C7] transition-colors leading-snug">
                                   {item.name}
                                 </h3>
                                 <div className="shrink-0 text-right">
-                                  <span className="inline-block px-3 py-1 rounded-xl bg-gradient-to-br from-[#7DD3FC] to-[#38BDF8] border-2 border-[#191A23] font-mono font-bold text-lg sm:text-xl text-[#0F172A] tabular-nums">
+                                  <span className="inline-block px-2.5 py-0.5 rounded-lg bg-gradient-to-br from-[#7DD3FC] to-[#38BDF8] border border-[#191A23] font-mono font-bold text-sm sm:text-base text-[#0F172A] tabular-nums">
                                     ₹{item.priceInr.toLocaleString('en-IN')}
                                   </span>
-                                  <span className="block text-xs font-mono font-semibold text-[#191A23]/80 mt-1">
+                                  <span className="block text-[11px] font-mono font-semibold text-[#191A23]/75 mt-0.5">
                                     {item.unitLabel}
                                   </span>
                                 </div>
                               </div>
 
-                              <p className="text-xs sm:text-sm text-[#191A23]/85 leading-relaxed">
+                              <p className="text-xs text-[#191A23]/80 leading-snug">
                                 {item.tagline}
                               </p>
                             </div>
 
                             {/* Contact Actions: WhatsApp + Icon-Only Call Button */}
-                            <div className="flex items-center gap-2.5 pt-1">
+                            <div className="flex items-center gap-2 pt-0.5">
                               <a
                                 href={buildWhatsAppUrl(
                                   `Hi Cool Bros AC Service, I want to book ${item.name} (₹${item.priceInr.toLocaleString('en-IN')} ${item.unitLabel}).`
                                 )}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex-1 inline-flex items-center justify-center gap-2 px-3.5 py-3 min-h-[44px] text-xs sm:text-sm font-bold text-[#0F172A] bg-[#86EFAC] border-2 border-[#191A23] rounded-xl hover:bg-[#4ADE80] hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[38px] text-xs font-bold text-[#0F172A] bg-[#86EFAC] rounded-xl hover:bg-[#4ADE80] hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                               >
                                 <svg
-                                  className="w-4 h-4 fill-current shrink-0"
+                                  className="w-3.5 h-3.5 fill-current shrink-0"
                                   viewBox="0 0 24 24"
                                   aria-hidden="true"
                                 >
@@ -1171,9 +1177,9 @@ export default function App() {
                                 href={CONTACT_PHONE_HREF}
                                 title={`Call ${CONTACT_PHONE_DISPLAY}`}
                                 aria-label={`Call to book ${item.name}`}
-                                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] p-3 text-white bg-[#0F172A] border-2 border-[#191A23] rounded-xl hover:bg-[#0284C7] hover:-translate-y-0.5 active:translate-y-0 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                                className="inline-flex items-center justify-center min-w-[38px] min-h-[38px] p-2 text-white bg-[#0F172A] border-2 border-[#191A23] rounded-xl hover:bg-[#0284C7] hover:-translate-y-0.5 active:translate-y-0 transition-all shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                               >
-                                <Phone className="w-4 h-4 text-[#7DD3FC] shrink-0" aria-hidden="true" />
+                                <Phone className="w-3.5 h-3.5 text-[#7DD3FC] shrink-0" aria-hidden="true" />
                               </a>
                             </div>
                           </div>
@@ -1374,7 +1380,10 @@ export default function App() {
                               id="star-rating-label"
                               className="block text-xs font-bold text-[#191A23]"
                             >
-                              Your Star Rating * ({revRating} / 5)
+                              Your Star Rating *{' '}
+                              {(revHoverRating ?? revRating) > 0
+                                ? `(${revHoverRating ?? revRating} / 5)`
+                                : ''}
                             </span>
 
                             <svg
@@ -1541,7 +1550,7 @@ export default function App() {
                           <button
                             type="submit"
                             disabled={revSubmitting}
-                            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[48px] text-sm font-bold text-[#0F172A] bg-gradient-to-r from-[#7DD3FC] to-[#38BDF8] border-2 border-[#191A23] rounded-2xl hover:from-[#38BDF8] hover:to-[#0EA5E9] hover:text-white hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
+                            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[48px] text-sm font-bold text-[#0F172A] bg-gradient-to-r from-[#7DD3FC] to-[#38BDF8] border-2 border-gray-400 rounded-2xl hover:from-[#38BDF8] hover:to-[#0EA5E9] hover:text-white hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#191A23]"
                           >
                             <span>
                               {revSubmitting

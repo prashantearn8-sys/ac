@@ -23,14 +23,14 @@ export const CoolBrosLogo: React.FC<{ className?: string }> = ({
 export const HeroCoolingIllustration: React.FC = () => {
   return (
     <div
-      className="relative w-full max-w-[215px] sm:max-w-[280px] landscape:max-w-[240px] md:max-w-[440px] lg:max-w-[490px] xl:max-w-[530px] mx-auto landscape:ml-auto landscape:mr-0 md:ml-auto md:mr-0 select-none phone-landscape-hero-illustration-box"
+      className="relative w-full max-w-[215px] sm:max-w-[280px] landscape:max-w-[240px] md:max-w-[520px] lg:max-w-[640px] xl:max-w-[720px] 2xl:max-w-[780px] mx-auto landscape:ml-auto landscape:mr-0 md:mx-auto md:-translate-x-4 lg:-translate-x-8 xl:-translate-x-12 select-none phone-landscape-hero-illustration-box"
       aria-hidden="true"
     >
       <svg
-        viewBox="22 68 500 390"
+        viewBox="36 74 456 358"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto block overflow-visible"
+        className="w-full h-auto block overflow-visible md:scale-105 lg:scale-115 xl:scale-120 lg:origin-center"
         aria-hidden="true"
         focusable="false"
       >
@@ -531,7 +531,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
+        className="w-28 sm:w-32 h-22 sm:h-24 shrink-0 overflow-visible"
       >
         <rect
           x="16"
@@ -655,7 +655,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
+        className="w-28 sm:w-32 h-22 sm:h-24 shrink-0 overflow-visible"
       >
         <rect
           x="24"
@@ -723,7 +723,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
+        className="w-28 sm:w-32 h-22 sm:h-24 shrink-0 overflow-visible"
       >
         <rect
           x="28"
@@ -827,7 +827,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
+        className="w-28 sm:w-32 h-22 sm:h-24 shrink-0 overflow-visible"
       >
         <rect
           x="24"
@@ -926,7 +926,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
         fill="none"
         aria-hidden="true"
         focusable="false"
-        className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
+        className="w-28 sm:w-32 h-22 sm:h-24 shrink-0 overflow-visible"
       >
         <rect
           x="20"
@@ -1041,7 +1041,7 @@ export const ServiceCardIllustration: React.FC<{ index: number }> = ({ index }) 
       fill="none"
       aria-hidden="true"
       focusable="false"
-      className="w-36 sm:w-44 h-28 sm:h-36 shrink-0 overflow-visible"
+      className="w-28 sm:w-32 h-22 sm:h-24 shrink-0 overflow-visible"
     >
       <rect
         x="22"

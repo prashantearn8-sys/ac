@@ -376,20 +376,6 @@ export async function createReviewInFirestore(
   }
 }
 
-export async function setReviewApprovalInFirestore(
-  reviewId: string,
-  approved: boolean
-): Promise<void> {
-  const path = `reviews/${reviewId}`;
-  try {
-    await updateDoc(doc(db, 'reviews', reviewId), {
-      approved,
-    });
-  } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, path);
-  }
-}
-
 export async function deleteReviewInFirestore(reviewId: string): Promise<void> {
   const path = `reviews/${reviewId}`;
   try {
